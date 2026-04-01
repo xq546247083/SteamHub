@@ -107,6 +107,27 @@ namespace SteamHub.Repositories
         }
 
         /// <summary>
+        /// 批量更新游戏的Steam账号ID
+        /// </summary>
+        public static void UpdateAccountSteamIds(List<SteamGame> games)
+        {
+            using var context = new SteamHubDbContext();
+
+            foreach (var game in games)
+            {
+                var existing = context.SteamGames.FirstOrDefault(g => g.AppId == game.AppId);
+                if (existing == null)
+                {
+                    continue;
+                }
+
+                existing.AccountSteamId = game.AccountSteamId;
+            }
+
+            context.SaveChanges();
+        }
+
+        /// <summary>
         /// 批量更新游戏
         /// </summary>
         public static void UpdateList(List<SteamGame> games)

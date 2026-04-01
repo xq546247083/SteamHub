@@ -108,6 +108,7 @@ namespace SteamHub.ViewModel
             var steamGameSources = SteamAnalyzer.GetAllGames();
             var steamGames = steamGameSources.Select(r => new SteamGame(Guid.Empty, r.AppId, r.Name, r.Icon, r.AccountSteamId, 0)).ToList();
             SteamGameRepository.AddList(steamGames);
+            SteamGameRepository.UpdateAccountSteamIds(steamGames);
 
             Lactor.ReLoad();
             Lactor.ShowToolTip("刷新成功!");
