@@ -55,6 +55,18 @@ namespace SteamHub.ViewModel
 
         #endregion
 
+        #region 属性变化引发的事件
+
+        /// <summary>
+        /// 选中账号变更
+        /// </summary>
+        partial void OnSelectedAccountChanged(SteamAccount oldValue, SteamAccount newValue)
+        {
+            LoadDisplayGames();
+        }
+
+        #endregion
+
         #region 绑定方法
 
         /// <summary>
@@ -88,7 +100,14 @@ namespace SteamHub.ViewModel
                 return;
             }
 
-            SelectedAccount = account;
+            if (SelectedAccount == account)
+            {
+                LoadDisplayGames();
+            }
+            else
+            {
+                SelectedAccount = account;
+            }
         }
 
         /// <summary>
@@ -130,7 +149,7 @@ namespace SteamHub.ViewModel
 
             // 存入数据库
             SteamGameRepository.UpdateCurrentSelectAccount(game.AppId, account.SteamId);
-            DisplayGames = new ObservableCollection<SteamGame>(AppGlobalData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll() : SteamGameRepository.GetBySteamId(SelectedAccount.SteamId) ?? []);
+            LoadDisplayGames();
         }
 
         /// <summary>
@@ -220,7 +239,7 @@ namespace SteamHub.ViewModel
             var previousSelectedSteamId = SelectedAccount?.SteamId;
 
             // 加载账号
-            var accounts = SteamAccountRepository.GetAll();
+            var accounts = SteamAccountRepository.GetAll(includeHidden: false);
             var list = new List<SteamAccount> { AppGlobalData.DefaultSteamAccount };
             if (accounts != null)
             {
@@ -239,14 +258,23 @@ namespace SteamHub.ViewModel
                 SelectedAccount = AppGlobalData.DefaultSteamAccount;
             }
 
-            // 加载游戏
-            TotalGameCount = SteamGameRepository.GetAll()?.Count ?? 0;
-            DisplayGames = new ObservableCollection<SteamGame>(AppGlobalData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll() : SteamGameRepository.GetBySteamId(SelectedAccount.SteamId) ?? []);
+            // 统计总游戏数 (不含隐藏) 并加载对应游戏列表
+            TotalGameCount = SteamGameRepository.GetAll(includeHidden: false)?.Count ?? 0;
+            LoadDisplayGames();
 
             // 加载自启动状态
             IsLaunchOnSysPowerOn = TaskSchedulerHelper.Get(AppGlobal.AppName) != null;
         }
 
+        #endregion
+
+        #region 私有方法
+
+        private void LoadDisplayGames()
+        {
+            DisplayGames = new ObservableCollection<SteamGame>(AppGlobalData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll(includeHidden: false) : SteamGameRepository.GetBySteamId(SelectedAccount?.SteamId, includeHidden: false) ?? []);
+        }
+        
         #endregion
     }
 }
