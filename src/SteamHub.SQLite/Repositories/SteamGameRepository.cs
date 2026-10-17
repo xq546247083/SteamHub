@@ -115,7 +115,6 @@ namespace SteamHub.Repositories
                 var existing = context.SteamGames.FirstOrDefault(g => g.AppId == game.AppId);
                 if (existing != null)
                 {
-                    existing.Name = game.Name;
                     if (game.Icon != null)
                     {
                         existing.Icon = game.Icon;

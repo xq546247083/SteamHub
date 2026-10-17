@@ -121,7 +121,6 @@ namespace SteamHub.Repositories
                 var existing = context.SteamAccounts.FirstOrDefault(g => g.Account == steamAccount.Account);
                 if (existing != null)
                 {
-                    existing.Name = steamAccount.Name;
                     existing.Icon = steamAccount.Icon;
                     existing.GameCount = steamAccount.GameCount;
                     existing.LastPlayed = steamAccount.LastPlayed;
