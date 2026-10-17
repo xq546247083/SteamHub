@@ -108,6 +108,52 @@ namespace SteamHub.ViewModel
         }
 
         /// <summary>
+        /// 一键清理本地已不存在的账号和游戏
+        /// </summary>
+        [RelayCommand]
+        private void CleanUp()
+        {
+            // 1. 获取本地真实存在的游戏与登录账号
+            var steamGameSources = SteamAnalyzer.GetAllGames();
+            var validAppIds = steamGameSources.Select(g => g.AppId).ToHashSet();
+
+            var steamAccountSources = SteamAnalyzer.GetAllLoginAccounts();
+            var validAccounts = steamAccountSources.Select(a => a.AccountName).ToHashSet();
+            var validSteamIds = steamAccountSources.Select(a => a.SteamId).ToHashSet();
+
+            // 2. 查询数据库中的所有数据 (包括已隐藏的)
+            var dbGames = SteamGameRepository.GetAll(includeHidden: true);
+            var dbAccounts = SteamAccountRepository.GetAll(includeHidden: true);
+
+            // 3. 找出本地已不存在的记录
+            var invalidGames = dbGames.Where(g => !validAppIds.Contains(g.AppId)).ToList();
+            var invalidAccounts = dbAccounts.Where(a => !validAccounts.Contains(a.Account)).ToList();
+
+            if (invalidGames.Count == 0 && invalidAccounts.Count == 0)
+            {
+                Lactor.ShowToolTip("本地账号与游戏均有效，无需清理！");
+                return;
+            }
+
+            // 4. 清理数据库中的无效数据
+            var invalidAppIds = invalidGames.Select(g => g.AppId).ToList();
+            var invalidAccountNames = invalidAccounts.Select(a => a.Account).ToList();
+            var invalidSteamIds = invalidAccounts.Select(a => a.SteamId).ToList();
+
+            SteamGameRepository.DeleteByAppIds(invalidAppIds);
+            SteamAccountGameRepository.DeleteByAppIds(invalidAppIds);
+            SteamAccountRepository.DeleteByAccounts(invalidAccountNames);
+            SteamAccountGameRepository.DeleteBySteamIds(invalidSteamIds);
+
+            // 5. 关闭抽屉，重新分析与重载界面
+            DrawerType = DrawerType.None;
+            ReAnalyzer();
+            Lactor.ReLoad();
+
+            Lactor.ShowToolTip($"清理完成！已移除 {invalidGames.Count} 个失效游戏，{invalidAccounts.Count} 个失效账号。");
+        }
+
+        /// <summary>
         /// 打开 GitHub 仓库
         /// </summary>
         [RelayCommand]
@@ -140,7 +186,7 @@ namespace SteamHub.ViewModel
         /// <summary>
         /// 解析数据
         /// </summary>
-        public void ReAnalyzer() 
+        public void ReAnalyzer()
         {
             // 1. 刷新游戏数据 (包含从 acf 解析的 LastPlayed)
             var steamGameSources = SteamAnalyzer.GetAllGames();

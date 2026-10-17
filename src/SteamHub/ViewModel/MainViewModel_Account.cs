@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SteamHub.Entities;
-using SteamHub.Helper;
 using SteamHub.Manager;
 using SteamHub.Repositories;
 using System.Collections.ObjectModel;

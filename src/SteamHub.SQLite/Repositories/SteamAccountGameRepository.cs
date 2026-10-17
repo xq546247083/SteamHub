@@ -44,6 +44,46 @@ public static class SteamAccountGameRepository
     }
 
     /// <summary>
+    /// 根据 AppId 列表删除关联关系
+    /// </summary>
+    /// <param name="appIds">AppId 列表</param>
+    public static void DeleteByAppIds(IEnumerable<string> appIds)
+    {
+        if (appIds == null || !appIds.Any())
+        {
+            return;
+        }
+
+        using var context = new SteamHubDbContext();
+        var list = context.SteamAccountGames.Where(r => appIds.Contains(r.AppId)).ToList();
+        if (list.Count > 0)
+        {
+            context.SteamAccountGames.RemoveRange(list);
+            context.SaveChanges();
+        }
+    }
+
+    /// <summary>
+    /// 根据 SteamId 列表删除关联关系
+    /// </summary>
+    /// <param name="steamIds">SteamId 列表</param>
+    public static void DeleteBySteamIds(IEnumerable<string> steamIds)
+    {
+        if (steamIds == null || !steamIds.Any())
+        {
+            return;
+        }
+
+        using var context = new SteamHubDbContext();
+        var list = context.SteamAccountGames.Where(r => steamIds.Contains(r.SteamId)).ToList();
+        if (list.Count > 0)
+        {
+            context.SteamAccountGames.RemoveRange(list);
+            context.SaveChanges();
+        }
+    }
+
+    /// <summary>
     /// 清空所有关联关系
     /// </summary>
     public static void Clear()

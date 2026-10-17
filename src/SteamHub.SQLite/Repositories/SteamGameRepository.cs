@@ -226,6 +226,26 @@ namespace SteamHub.Repositories
         }
 
         /// <summary>
+        /// 根据 AppId 列表物理删除游戏
+        /// </summary>
+        /// <param name="appIds">AppId 列表</param>
+        public static void DeleteByAppIds(IEnumerable<string> appIds)
+        {
+            if (appIds == null || !appIds.Any())
+            {
+                return;
+            }
+
+            using var context = new SteamHubDbContext();
+            var list = context.SteamGames.Where(g => appIds.Contains(g.AppId)).ToList();
+            if (list.Count > 0)
+            {
+                context.SteamGames.RemoveRange(list);
+                context.SaveChanges();
+            }
+        }
+
+        /// <summary>
         /// 清空所有游戏
         /// </summary>
         public static void Clear()

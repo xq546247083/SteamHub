@@ -100,8 +100,6 @@ namespace SteamHub.Repositories
             }
         }
 
-
-
         /// <summary>
         /// 检查账号是否存在
         /// </summary>
@@ -164,6 +162,26 @@ namespace SteamHub.Repositories
             }
 
             context.SaveChanges();
+        }
+
+        /// <summary>
+        /// 根据账号列表物理删除账号
+        /// </summary>
+        /// <param name="accounts">账号列表</param>
+        public static void DeleteByAccounts(IEnumerable<string> accounts)
+        {
+            if (accounts == null || !accounts.Any())
+            {
+                return;
+            }
+
+            using var context = new SteamHubDbContext();
+            var list = context.SteamAccounts.Where(a => accounts.Contains(a.Account)).ToList();
+            if (list.Count > 0)
+            {
+                context.SteamAccounts.RemoveRange(list);
+                context.SaveChanges();
+            }
         }
     }
 }

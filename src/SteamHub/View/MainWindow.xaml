@@ -401,6 +401,20 @@
                             </StackPanel>
                         </Button>
 
+                        <!-- 一键清理 -->
+                        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                Command="{Binding CleanUpCommand}"
+                                ToolTip="清理本地已不存在的账号与游戏"
+                                Foreground="#673ab7"
+                                Padding="8,4"
+                                Height="32"
+                                Margin="0,0,6,0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Broom" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                <TextBlock Text="清理" FontSize="12" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
                         <!-- GitHub -->
                         <Button Style="{StaticResource MaterialDesignFlatButton}"
                                 Command="{Binding OpenGitHubCommand}"
