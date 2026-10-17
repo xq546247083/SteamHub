@@ -1,4 +1,4 @@
-﻿namespace SteamHub.Model
+namespace SteamHub.Model
 {
     /// <summary>
     /// Steam游戏数据源模型
@@ -22,17 +22,17 @@
         }
 
         /// <summary>
-        /// SteamId
+        /// 游戏图标数据
         /// </summary>
-        public string AccountSteamId
+        public byte[] Icon
         {
             get; set;
         }
 
         /// <summary>
-        /// 游戏图标数据
+        /// 上次游玩时间 (Unix 时间戳)
         /// </summary>
-        public byte[] Icon
+        public long LastPlayed
         {
             get; set;
         }

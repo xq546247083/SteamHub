@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GongSolutions.Wpf.DragDrop;
 using MaterialDesignThemes.Wpf;
@@ -60,7 +60,6 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void MainWindowKeyDown(CommandParameterEx commandParameterEx)
         {
-            // 转换参数
             var keyEventArgs = commandParameterEx.EventArgs as System.Windows.Input.KeyEventArgs;
             if (keyEventArgs == null)
             {
@@ -81,7 +80,6 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void MainWindowClosing(CommandParameterEx commandParameterEx)
         {
-            // 转换参数
             var cancelEventArgs = commandParameterEx.EventArgs as CancelEventArgs;
             if (cancelEventArgs == null)
             {
@@ -99,16 +97,27 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void Refresh()
         {
-            // 刷新账号数据
-            var steamAccountSources = SteamAnalyzer.GetAllLoginAccounts();
-            var steamAccounts = steamAccountSources.Select(r => new SteamAccount(Guid.NewGuid(), r.SteamId, r.AccountName, r.PersonaName ?? r.AccountName, string.Empty, 0, r.Icon)).ToList();
-            SteamAccountRepository.AddList(steamAccounts);
-
-            // 刷新游戏数据
+            // 1. 刷新游戏数据 (包含从 acf 解析的 LastPlayed)
             var steamGameSources = SteamAnalyzer.GetAllGames();
-            var steamGames = steamGameSources.Select(r => new SteamGame(Guid.Empty, r.AppId, r.Name, r.Icon, r.AccountSteamId, 0)).ToList();
+            var steamGames = steamGameSources.Select(r => new SteamGame(Guid.Empty, r.AppId, r.Name, r.Icon, r.LastPlayed)).ToList();
             SteamGameRepository.AddList(steamGames);
-            SteamGameRepository.UpdateAccountSteamIds(steamGames);
+
+            // 2. 刷新账号与游戏多对多关联及 LastPlayed (业务层清空再添加)
+            SteamAccountGameRepository.Clear();
+            var accountGameSources = SteamAnalyzer.GetAllAccountPlayGames();
+            var accountGames = accountGameSources.Select(r => new SteamAccountGame(Guid.NewGuid(), r.SteamId, r.AppId, r.LastPlayed)).ToList();
+            SteamAccountGameRepository.AddOrUpdateList(accountGames);
+
+            // 3. 业务层统计账号拥有的游戏数量与最新游戏时间，存入账号数据
+            var steamAccountSources = SteamAnalyzer.GetAllLoginAccounts();
+            var steamAccounts = steamAccountSources.Select(r =>
+            {
+                var playedGames = accountGames.Where(g => g.SteamId == r.SteamId).ToList();
+                int gameCount = playedGames.Count;
+                long lastPlayed = playedGames.Count > 0 ? playedGames.Max(g => g.LastPlayed) : 0;
+                return new SteamAccount(Guid.NewGuid(), r.SteamId, r.AccountName, r.PersonaName ?? r.AccountName, string.Empty, 0, r.Icon, gameCount, lastPlayed);
+            }).ToList();
+            SteamAccountRepository.AddList(steamAccounts);
 
             Lactor.ReLoad();
             Lactor.ShowToolTip("刷新成功!");
@@ -138,7 +147,6 @@ namespace SteamHub.ViewModel
         {
             LoadSteamAccounts();
             LoadSteamGames();
-            LoadProcesses();
             LoadDeletedData();
         }
 
@@ -158,11 +166,13 @@ namespace SteamHub.ViewModel
 
             if (dropInfo.Data is SteamAccount && dropInfo.TargetItem is SteamAccount)
             {
-                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-                dropInfo.Effects = System.Windows.DragDropEffects.Move;
-            }
-            else if (dropInfo.Data is SteamGame && dropInfo.TargetItem is SteamGame)
-            {
+                var source = dropInfo.Data as SteamAccount;
+                var target = dropInfo.TargetItem as SteamAccount;
+                if (AppGlobalData.IsDefaultAccount(source) || AppGlobalData.IsDefaultAccount(target))
+                {
+                    return;
+                }
+
                 dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
                 dropInfo.Effects = System.Windows.DragDropEffects.Move;
             }
@@ -175,33 +185,23 @@ namespace SteamHub.ViewModel
         {
             if (dropInfo.Data is SteamAccount sourceAccount && dropInfo.TargetItem is SteamAccount targetAccount)
             {
+                if (AppGlobalData.IsDefaultAccount(sourceAccount) || AppGlobalData.IsDefaultAccount(targetAccount))
+                {
+                    return;
+                }
+
                 int oldIndex = SteamAccounts.IndexOf(sourceAccount);
                 int newIndex = SteamAccounts.IndexOf(targetAccount);
                 if (oldIndex != -1 && newIndex != -1)
                 {
                     SteamAccounts.Move(oldIndex, newIndex);
-                    for (int i = 0; i < SteamAccounts.Count; i++)
+                    var realAccounts = SteamAccounts.Where(a => !AppGlobalData.IsDefaultAccount(a)).ToList();
+                    for (int i = 0; i < realAccounts.Count; i++)
                     {
-                        SteamAccounts[i].Order = i;
+                        realAccounts[i].Order = i;
                     }
 
-                    SteamAccountRepository.UpdateList(SteamAccounts.ToList());
-                    Lactor.TrayPopupViewModel.ReLoad();
-                }
-            }
-            else if (dropInfo.Data is SteamGame sourceGame && dropInfo.TargetItem is SteamGame targetGame)
-            {
-                int oldIndex = SteamGames.IndexOf(sourceGame);
-                int newIndex = SteamGames.IndexOf(targetGame);
-                if (oldIndex != -1 && newIndex != -1)
-                {
-                    SteamGames.Move(oldIndex, newIndex);
-                    for (int i = 0; i < SteamGames.Count; i++)
-                    {
-                        SteamGames[i].Order = i;
-                    }
-
-                    SteamGameRepository.UpdateList(SteamGames.ToList());
+                    SteamAccountRepository.UpdateList(realAccounts);
                     Lactor.TrayPopupViewModel.ReLoad();
                 }
             }

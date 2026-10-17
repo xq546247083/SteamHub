@@ -1,4 +1,4 @@
-﻿<Application x:Class="SteamHub.App"
+<Application x:Class="SteamHub.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:SteamHub"
@@ -13,7 +13,10 @@
                                              SecondaryColor="Lime" />
 
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+                <ResourceDictionary Source="/Resources/Converters.xaml" />
+                <ResourceDictionary Source="/Resources/ScrollBars.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
             <FontFamily x:Key="MaterialDesignFont">Source Han Serif SC, Source Han Serif CN, 思源宋体, Microsoft YaHei UI, Microsoft YaHei</FontFamily>
         </ResourceDictionary>
     </Application.Resources>

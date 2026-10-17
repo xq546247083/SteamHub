@@ -3,45 +3,54 @@ using SteamHub.Entities;
 namespace SteamHub.Repositories
 {
     /// <summary>
-    /// Steam游戏仓储
+    /// Steam 游戏仓储
+    /// 统一负责所有与 SteamGame 实体相关的数据访问 (按游玩时间自动排序)
     /// </summary>
     public static class SteamGameRepository
     {
         /// <summary>
-        /// 获取所有游戏
+        /// 获取所有未删除游戏 (统一按最新游戏时间倒序排序)
         /// </summary>
         public static List<SteamGame> GetAll()
         {
             using var context = new SteamHubDbContext();
             return context.SteamGames
                 .Where(g => !g.IsDeleted)
-                .OrderBy(g => g.Order)
+                .OrderByDescending(g => g.LastPlayed)
                 .ThenBy(g => g.Name)
                 .ToList();
         }
 
         /// <summary>
-        /// 获取所有已删除游戏
+        /// 根据 SteamId 获取该账号拥有的游戏列表 (按该账号游玩该游戏的时间倒序排序)
+        /// </summary>
+        /// <param name="steamId">账号 SteamId</param>
+        /// <returns>游戏列表</returns>
+        public static List<SteamGame> GetBySteamId(string steamId)
+        {
+            if (string.IsNullOrEmpty(steamId))
+            {
+                return new List<SteamGame>();
+            }
+
+            using var context = new SteamHubDbContext();
+
+            return (from rel in context.SteamAccountGames
+                    join game in context.SteamGames on rel.AppId equals game.AppId
+                    where rel.SteamId == steamId && !rel.IsDeleted && !game.IsDeleted
+                    orderby rel.LastPlayed descending, game.Name ascending
+                    select game).ToList();
+        }
+
+        /// <summary>
+        /// 获取所有已删除游戏 (回收站，按游戏时间倒序)
         /// </summary>
         public static List<SteamGame> GetListOfDeleted()
         {
             using var context = new SteamHubDbContext();
             return context.SteamGames
                 .Where(g => g.IsDeleted)
-                .OrderBy(g => g.Order)
-                .ThenBy(g => g.Name)
-                .ToList();
-        }
-
-        /// <summary>
-        /// 根据 SteamId 获取游戏列表
-        /// </summary>
-        public static List<SteamGame> GetBySteamId(string accountSteamId)
-        {
-            using var context = new SteamHubDbContext();
-            return context.SteamGames
-                .Where(g => g.AccountSteamId == accountSteamId && !g.IsDeleted)
-                .OrderBy(g => g.Order)
+                .OrderByDescending(g => g.LastPlayed)
                 .ThenBy(g => g.Name)
                 .ToList();
         }
@@ -67,7 +76,10 @@ namespace SteamHub.Repositories
             {
                 existing.Name = game.Name;
                 existing.Icon = game.Icon;
-                existing.Order = game.Order;
+                if (game.LastPlayed > 0)
+                {
+                    existing.LastPlayed = game.LastPlayed;
+                }
             }
             else
             {
@@ -93,6 +105,12 @@ namespace SteamHub.Repositories
                 var existing = context.SteamGames.FirstOrDefault(g => g.AppId == game.AppId);
                 if (existing != null)
                 {
+                    existing.Name = game.Name;
+                    existing.Icon = game.Icon;
+                    if (game.LastPlayed > 0)
+                    {
+                        existing.LastPlayed = game.LastPlayed;
+                    }
                     continue;
                 }
 
@@ -101,27 +119,6 @@ namespace SteamHub.Repositories
                     game.Id = Guid.NewGuid();
                 }
                 context.SteamGames.Add(game);
-            }
-
-            context.SaveChanges();
-        }
-
-        /// <summary>
-        /// 批量更新游戏的Steam账号ID
-        /// </summary>
-        public static void UpdateAccountSteamIds(List<SteamGame> games)
-        {
-            using var context = new SteamHubDbContext();
-
-            foreach (var game in games)
-            {
-                var existing = context.SteamGames.FirstOrDefault(g => g.AppId == game.AppId);
-                if (existing == null)
-                {
-                    continue;
-                }
-
-                existing.AccountSteamId = game.AccountSteamId;
             }
 
             context.SaveChanges();
@@ -144,14 +141,33 @@ namespace SteamHub.Repositories
 
                 existing.Name = game.Name;
                 existing.Icon = game.Icon;
-                existing.Order = game.Order;
+                if (game.LastPlayed > 0)
+                {
+                    existing.LastPlayed = game.LastPlayed;
+                }
             }
 
             context.SaveChanges();
         }
 
         /// <summary>
-        /// 删除游戏(软删除)
+        /// 更新指定游戏的当前选中启动账号
+        /// </summary>
+        /// <param name="appId">游戏 AppId</param>
+        /// <param name="steamId">账号 SteamId</param>
+        public static void UpdateCurrentSelectAccount(string appId, string steamId)
+        {
+            using var context = new SteamHubDbContext();
+            var existing = context.SteamGames.FirstOrDefault(g => g.AppId == appId);
+            if (existing != null)
+            {
+                existing.CurrentSelectAccountSteamId = steamId ?? string.Empty;
+                context.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// 删除游戏 (软删除)
         /// </summary>
         public static void Delete(string appId)
         {
@@ -165,7 +181,7 @@ namespace SteamHub.Repositories
         }
 
         /// <summary>
-        /// 恢复游戏
+        /// 恢复游戏 (回收站)
         /// </summary>
         public static void RestoreRecycleBin()
         {
@@ -178,6 +194,7 @@ namespace SteamHub.Repositories
             }
         }
 
+        /// <summary>
         /// 清空回收站
         /// </summary>
         public static void EmptyRecycleBin()

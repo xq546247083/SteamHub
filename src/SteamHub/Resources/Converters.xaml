@@ -1,0 +1,22 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:convert="clr-namespace:SteamHub.Convert">
+
+    <!-- 全局值转换器定义 -->
+    <convert:ByteToImageSourceConverter x:Key="ByteToImageSourceConverter" />
+    <convert:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    <convert:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+    <convert:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+    <convert:InverseEnumToBooleanConverter x:Key="InverseEnumToBooleanConverter" />
+    <convert:EqualsConverter x:Key="EqualsConverter" />
+    <convert:BooleanToContentConverter x:Key="BooleanToContentConverter" />
+    <convert:LastPlayedToTimeConverter x:Key="LastPlayedToTimeConverter" />
+    <convert:HasMultipleAccountsConverter x:Key="HasMultipleAccountsConverter" />
+    <convert:IsRealAccountConverter x:Key="IsRealAccountConverter" />
+    <convert:SteamIdToAccountNameConverter x:Key="SteamIdToAccountNameConverter" />
+    <convert:AppIdToAccountsConverter x:Key="AppIdToAccountsConverter" />
+    <convert:ArrayMultiConverter x:Key="ArrayMultiConverter" />
+    <convert:GameAccountMenuVisibilityConverter x:Key="GameAccountMenuVisibilityConverter" />
+    <convert:GameToAccountNameConverter x:Key="GameToAccountNameConverter" />
+
+</ResourceDictionary>

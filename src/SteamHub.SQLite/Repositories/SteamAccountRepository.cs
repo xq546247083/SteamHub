@@ -1,14 +1,15 @@
-﻿using SteamHub.Entities;
+using SteamHub.Entities;
 
 namespace SteamHub.Repositories
 {
     /// <summary>
-    /// Steam账号仓储
+    /// Steam 账号仓储
+    /// 统一负责所有与 SteamAccount 实体相关的数据访问
     /// </summary>
     public static class SteamAccountRepository
     {
         /// <summary>
-        /// 获取所有账号
+        /// 获取所有未删除账号
         /// </summary>
         public static List<SteamAccount> GetAll()
         {
@@ -23,7 +24,7 @@ namespace SteamHub.Repositories
         /// <summary>
         /// 获取所有已删除账号
         /// </summary>
-        public static List<SteamAccount> GetListOfDeleted()
+        public static List<SteamAccount> GetDeletedList()
         {
             using var context = new SteamHubDbContext();
             return context.SteamAccounts
@@ -43,7 +44,7 @@ namespace SteamHub.Repositories
         }
 
         /// <summary>
-        /// 根据SteamId获取账号
+        /// 根据 SteamId 获取账号
         /// </summary>
         public static SteamAccount GetBySteamId(string steamId)
         {
@@ -52,17 +53,24 @@ namespace SteamHub.Repositories
         }
 
         /// <summary>
-        /// 添加账号
+        /// 获取拥有指定游戏的所有真实账号列表
         /// </summary>
-        public static void Add(SteamAccount account)
+        /// <param name="appId">游戏 AppId</param>
+        /// <returns>账号列表 (纯实体数据)</returns>
+        public static List<SteamAccount> GetAccountsByAppId(string appId)
         {
-            using var context = new SteamHubDbContext();
-            if (account.Id == Guid.Empty)
+            if (string.IsNullOrEmpty(appId))
             {
-                account.Id = Guid.NewGuid();
+                return new List<SteamAccount>();
             }
-            context.SteamAccounts.Add(account);
-            context.SaveChanges();
+
+            using var context = new SteamHubDbContext();
+
+            return (from rel in context.SteamAccountGames
+                    join acc in context.SteamAccounts on rel.SteamId equals acc.SteamId
+                    where rel.AppId == appId && !rel.IsDeleted && !acc.IsDeleted
+                    orderby rel.LastPlayed descending, acc.Order ascending
+                    select acc).ToList();
         }
 
         /// <summary>
@@ -78,12 +86,14 @@ namespace SteamHub.Repositories
                 existing.Password = account.Password;
                 existing.Order = account.Order;
                 existing.Icon = account.Icon;
+                existing.GameCount = account.GameCount;
+                existing.LastPlayed = account.LastPlayed;
                 context.SaveChanges();
             }
         }
 
         /// <summary>
-        /// 删除账号(软删除)
+        /// 删除账号
         /// </summary>
         public static void Delete(string account)
         {
@@ -97,7 +107,7 @@ namespace SteamHub.Repositories
         }
 
         /// <summary>
-        /// 恢复回收站
+        /// 恢复回收站账号
         /// </summary>
         public static void RestoreRecycleBin()
         {
@@ -110,6 +120,7 @@ namespace SteamHub.Repositories
             }
         }
 
+        /// <summary>
         /// 清空回收站
         /// </summary>
         public static void EmptyRecycleBin()
@@ -133,7 +144,7 @@ namespace SteamHub.Repositories
         }
 
         /// <summary>
-        /// 批量添加账号
+        /// 批量添加或同步账号基础数据
         /// </summary>
         public static void AddList(List<SteamAccount> steamAccounts)
         {
@@ -144,6 +155,16 @@ namespace SteamHub.Repositories
                 var existing = context.SteamAccounts.FirstOrDefault(g => g.Account == steamAccount.Account);
                 if (existing != null)
                 {
+                    existing.Name = steamAccount.Name;
+                    existing.Icon = steamAccount.Icon;
+                    if (steamAccount.GameCount > 0)
+                    {
+                        existing.GameCount = steamAccount.GameCount;
+                    }
+                    if (steamAccount.LastPlayed > 0)
+                    {
+                        existing.LastPlayed = steamAccount.LastPlayed;
+                    }
                     continue;
                 }
 
@@ -175,6 +196,9 @@ namespace SteamHub.Repositories
                 existing.Name = steamAccount.Name;
                 existing.Password = steamAccount.Password;
                 existing.Order = steamAccount.Order;
+                existing.Icon = steamAccount.Icon;
+                existing.GameCount = steamAccount.GameCount;
+                existing.LastPlayed = steamAccount.LastPlayed;
             }
 
             context.SaveChanges();

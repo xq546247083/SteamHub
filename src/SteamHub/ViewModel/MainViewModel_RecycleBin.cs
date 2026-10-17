@@ -99,7 +99,7 @@ namespace SteamHub.ViewModel
         private void LoadDeletedData()
         {
             DeletedSteamGames = new ObservableCollection<SteamGame>(SteamGameRepository.GetListOfDeleted());
-            DeletedSteamAccounts = new ObservableCollection<SteamAccount>(SteamAccountRepository.GetListOfDeleted());
+            DeletedSteamAccounts = new ObservableCollection<SteamAccount>(SteamAccountRepository.GetDeletedList());
         }
 
         #endregion

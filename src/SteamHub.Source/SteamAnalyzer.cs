@@ -76,8 +76,6 @@ public static class SteamAnalyzer
             return games;
         }
 
-        var steamAccountPlayGames = LoadAccountPlayGames();
-
         // 遍历每个库路径,扫描游戏清单文件
         foreach (var libraryPath in libraryPaths)
         {
@@ -93,8 +91,6 @@ public static class SteamAnalyzer
                 var game = LoadGameSource(manifestFile);
                 if (game != null && !string.IsNullOrEmpty(game.AppId) && !skipGameAppIds.Contains(game.AppId))
                 {
-                    // 加载游戏用户
-                    game.AccountSteamId = steamAccountPlayGames.LastOrDefault(r => r.AppId == game.AppId)?.SteamId ?? string.Empty;
                     games.Add(game);
                 }
             }
@@ -216,10 +212,10 @@ public static class SteamAnalyzer
     }
 
     /// <summary>
-    /// 加载用户玩的游戏汇总信息
+    /// 获取所有账号玩过的游戏关联信息
     /// </summary>
-    /// <returns></returns>
-    private static List<SteamAccountPlayGameSource> LoadAccountPlayGames()
+    /// <returns>关联信息列表</returns>
+    public static List<SteamAccountPlayGameSource> GetAllAccountPlayGames()
     {
         var result = new List<SteamAccountPlayGameSource>();
 
@@ -310,11 +306,14 @@ public static class SteamAnalyzer
         }
 
         var vdfContent = File.ReadAllText(manifestPath);
+        var lastPlayedStr = ExtractValue(vdfContent, "LastPlayed");
+        long.TryParse(lastPlayedStr, out var lastPlayed);
+
         return new SteamGameSource
         {
             AppId = ExtractValue(vdfContent, "appid"),
             Name = ExtractValue(vdfContent, "name"),
-            AccountSteamId = ExtractValue(vdfContent, "LastOwner")
+            LastPlayed = lastPlayed
         };
     }
 

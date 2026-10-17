@@ -1,6 +1,8 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SteamHub.Entities;
+using SteamHub.Helper;
+using SteamHub.Manager;
 using SteamHub.Repositories;
 using System.Collections.ObjectModel;
 
@@ -16,23 +18,58 @@ namespace SteamHub.ViewModel
         [ObservableProperty]
         private ObservableCollection<SteamAccount> steamAccounts;
 
+        /// <summary>
+        /// 当前选中的账号
+        /// </summary>
+        [ObservableProperty]
+        private SteamAccount selectedAccount;
+
+        #endregion
+
+        #region 属性变化引发的事件
+
+        /// <summary>
+        /// 选中账号变更
+        /// </summary>
+        partial void OnSelectedAccountChanged(SteamAccount oldValue, SteamAccount newValue)
+        {
+            LoadSteamGames();
+        }
+
         #endregion
 
         #region 绑定方法
 
         /// <summary>
-        /// 打开Steam登录账号
+        /// 选中账号
         /// </summary>
+        /// <param name="account">目标账号</param>
         [RelayCommand]
-        private void OpenSteamAccount(SteamAccount account)
+        private void SelectSteamAccount(SteamAccount account)
         {
             if (account == null)
             {
                 return;
             }
 
-            var processList = SettingRepository.GetKillProcessList();
-            SteamTool.Open(account.Account, processList);
+            SelectedAccount = account;
+        }
+
+        /// <summary>
+        /// 直接一键切换Steam登录账号
+        /// </summary>
+        /// <param name="account">目标账号</param>
+        [RelayCommand]
+        private void SwitchSteamAccount(SteamAccount account)
+        {
+            if (AppGlobalData.IsDefaultAccount(account))
+            {
+                return;
+            }
+
+            SteamTool.OpenAccount(account.Account);
+            LoadSteamAccounts();
+            Lactor.ShowToolTip($"已切换至账号: {account.Name}");
         }
 
         #endregion
@@ -44,7 +81,27 @@ namespace SteamHub.ViewModel
         /// </summary>
         private void LoadSteamAccounts()
         {
-            SteamAccounts = new ObservableCollection<SteamAccount>(SteamAccountRepository.GetAll());
+            var previousSelectedSteamId = SelectedAccount?.SteamId;
+
+            // 获取账号列表
+            var accounts = SteamAccountRepository.GetAll();
+            var list = new List<SteamAccount> { AppGlobalData.DefaultSteamAccount };
+            if (accounts != null)
+            {
+                list.AddRange(accounts);
+            }
+            SteamAccounts = new ObservableCollection<SteamAccount>(list);
+
+            // 过滤数据
+            if (!string.IsNullOrEmpty(previousSelectedSteamId))
+            {
+                var matched = SteamAccounts.FirstOrDefault(a => a.SteamId == previousSelectedSteamId);
+                SelectedAccount = matched ?? AppGlobalData.DefaultSteamAccount;
+            }
+            else
+            {
+                SelectedAccount = AppGlobalData.DefaultSteamAccount;
+            }
         }
 
         #endregion

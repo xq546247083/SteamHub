@@ -5,319 +5,428 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:convert="clr-namespace:SteamHub.Convert"
+             xmlns:manager="clr-namespace:SteamHub.Manager"
              mc:Ignorable="d">
 
     <UserControl.Resources>
-        <convert:ByteToImageSourceConverter x:Key="ByteToImageSourceConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Converters.xaml" />
+                <ResourceDictionary Source="/Resources/ScrollBars.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+        <!-- 托盘账号列表项样式 (紫色高亮) -->
+        <Style x:Key="TrayAccountItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="itemBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="3,0,0,0"
+                                BorderBrush="Transparent"
+                                CornerRadius="0,4,4,0"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="itemBorder" Property="Background" Value="#f5f5f5" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="itemBorder" Property="Background" Value="#ede7f6" />
+                                <Setter TargetName="itemBorder" Property="BorderBrush" Value="#673ab7" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 托盘游戏列表项样式 -->
+        <Style x:Key="TrayGameItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="gameBorder"
+                                Background="Transparent"
+                                CornerRadius="4"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="gameBorder" Property="Background" Value="#f5f5f5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Border CornerRadius="8"
-            Background="#FFFFFF"
-            Width="230"
-            Height="Auto">
+            Background="#ffffff"
+            BorderBrush="#e0e0e0"
+            BorderThickness="1"
+            Width="490"
+            Height="420">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="10"
-                              ShadowDepth="0"
-                              Opacity="0.3"
-                              Color="White" />
+            <DropShadowEffect BlurRadius="16"
+                              ShadowDepth="2"
+                              Opacity="0.12"
+                              Color="#000000" />
         </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <!-- 顶部标题行 -->
+                <RowDefinition Height="40" />
+                <!-- 分割线 -->
+                <RowDefinition Height="1" />
+                <!-- 主体左右分栏 -->
+                <RowDefinition Height="*" />
+                <!-- 分割线 -->
+                <RowDefinition Height="1" />
+                <!-- 底部操作区 -->
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0"
-                  Margin="10,5,10,5">
-                <TextBlock Text="Steam账号切换器"
-                           FontWeight="Bold"
-                           FontSize="14"
-                           VerticalAlignment="Center" />
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Right">
-                    <Button Width="30"
-                            Height="30"
-                            Command="{Binding ToggleShowTypeCommand}"
-                            Style="{StaticResource MaterialDesignIconForegroundButton}">
-                        <materialDesign:PackIcon>
-                            <materialDesign:PackIcon.Style>
-                                <Style TargetType="materialDesign:PackIcon">
-                                    <Setter Property="Kind"
-                                            Value="AccountMultiple" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ShowType}"
-                                                     Value="SteamGame">
-                                            <Setter Property="Kind"
-                                                    Value="Controller" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </materialDesign:PackIcon.Style>
-                        </materialDesign:PackIcon>
+            <!-- 顶部标题 -->
+            <Grid Grid.Row="0" Margin="14,0,10,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Steam" Width="20" Height="20" Foreground="#673ab7" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <TextBlock Text="SteamHub" FontWeight="Bold" FontSize="14" Foreground="#212121" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <Button HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Width="28"
+                        Height="28"
+                        Command="{Binding OpenMainWindowCommand}"
+                        Style="{StaticResource MaterialDesignIconButton}"
+                        Foreground="#757575"
+                        ToolTip="打开主界面">
+                    <materialDesign:PackIcon Kind="ViewDashboard" Width="18" Height="18" />
+                </Button>
+            </Grid>
+
+            <Separator Grid.Row="1" Background="#e0e0e0" Margin="0" />
+
+            <!-- 主体：左侧账号，右侧该账号游戏 -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <!-- 左侧账号列表 (195px) -->
+                    <ColumnDefinition Width="195" />
+                    <!-- 分界线 -->
+                    <ColumnDefinition Width="1" />
+                    <!-- 右侧游戏列表 -->
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧账号列表 -->
+                <Grid Grid.Column="0" Background="#fafafa">
+                    <ListBox ItemsSource="{Binding SteamAccounts}"
+                             SelectedItem="{Binding SelectedAccount}"
+                             ItemContainerStyle="{StaticResource TrayAccountItemStyle}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Height="48" Background="Transparent" Margin="8,2">
+                                    <Grid.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick"
+                                                      Command="{Binding DataContext.SelectSteamAccountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding}" />
+                                    </Grid.InputBindings>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 头像/图标 -->
+                                    <Grid Grid.Column="0" Width="28" Height="28" VerticalAlignment="Center">
+                                        <!-- 所有游戏图标 -->
+                                        <Border CornerRadius="4" Background="#ede7f6"
+                                                Visibility="{Binding SteamId, Converter={StaticResource IsRealAccountConverter}, ConverterParameter=Inverse}">
+                                            <materialDesign:PackIcon Kind="GamepadVariant" Width="16" Height="16" Foreground="#673ab7" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+
+                                        <!-- 账号头像 -->
+                                        <Border CornerRadius="4" Background="#ffffff" BorderBrush="#e0e0e0" BorderThickness="1"
+                                                Visibility="{Binding SteamId, Converter={StaticResource IsRealAccountConverter}}">
+                                            <Image Source="{Binding Icon, Converter={StaticResource ByteToImageSourceConverter}}" Stretch="UniformToFill" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- 名称与登录中徽章 -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="6,0,4,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}"
+                                                       Foreground="#212121"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxWidth="72"
+                                                       ToolTip="{Binding Name}" />
+
+                                            <!-- 账号游戏数量徽章 (真实账号) -->
+                                            <Border Background="#ede7f6"
+                                                    CornerRadius="3"
+                                                    Padding="3,0"
+                                                    Margin="3,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Visibility="{Binding SteamId, Converter={StaticResource IsRealAccountConverter}}">
+                                                <TextBlock Text="{Binding GameCount, StringFormat='{}{0}款'}"
+                                                           FontSize="9"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#673ab7" />
+                                            </Border>
+
+
+                                        </StackPanel>
+
+                                        <TextBlock Text="{Binding Account}"
+                                                   Foreground="#757575"
+                                                   FontSize="10"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Visibility="{Binding SteamId, Converter={StaticResource IsRealAccountConverter}}" />
+                                    </StackPanel>
+
+                                    <!-- 右侧：切换按钮或所有游戏总数 -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <!-- 所有游戏总数徽标 -->
+                                        <Border CornerRadius="8" Background="#ede7f6" Padding="6,1"
+                                                Visibility="{Binding SteamId, Converter={StaticResource IsRealAccountConverter}, ConverterParameter=Inverse}">
+                                            <TextBlock Text="{Binding DataContext.TotalGameCount, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       FontSize="10" FontWeight="Bold" Foreground="#673ab7" />
+                                        </Border>
+
+                                        <!-- 真实账号切换按钮 -->
+                                        <Button Command="{Binding DataContext.SwitchSteamAccountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="切换至此账号"
+                                                Padding="6,2"
+                                                Height="22"
+                                                FontSize="10"
+                                                FontWeight="SemiBold"
+                                                Background="#ffffff"
+                                                Foreground="#673ab7"
+                                                BorderBrush="#d1c4e9"
+                                                BorderThickness="1"
+                                                Cursor="Hand"
+                                                Visibility="{Binding SteamId, Converter={StaticResource IsRealAccountConverter}}">
+                                            <TextBlock Text="切换" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+
+                <Separator Grid.Column="1" Background="#e0e0e0" Margin="0" />
+
+                <!-- 右侧游戏列表 -->
+                <Grid Grid.Column="2" Background="#ffffff">
+                    <ListBox ItemsSource="{Binding DisplayGames}"
+                             ItemContainerStyle="{StaticResource TrayGameItemStyle}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             Padding="6,4">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Height="44" Padding="6,2" SnapsToDevicePixels="True" Background="Transparent">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <!-- 左侧可点击的游戏信息 (启动游戏) -->
+                                            <ColumnDefinition Width="*" />
+                                            <!-- 右侧操作区 (选账号 + 启动按钮) -->
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- 左侧点击区域：启动游戏 -->
+                                        <Button Grid.Column="0"
+                                                Command="{Binding DataContext.OpenSteamGameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource MaterialDesignFlatButton}"
+                                                HorizontalContentAlignment="Left"
+                                                Padding="0"
+                                                Height="40"
+                                                ToolTip="点击启动游戏">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="26" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- 游戏图标 -->
+                                                <Grid Grid.Column="0" Width="22" Height="22" VerticalAlignment="Center">
+                                                    <materialDesign:PackIcon Kind="GamepadVariantOutline" Width="18" Height="18" Foreground="#9e9e9e" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <Image Source="{Binding Icon, Converter={StaticResource ByteToImageSourceConverter}}" Stretch="Uniform" />
+                                                </Grid>
+
+                                                <!-- 游戏名称与上次游玩 -->
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="6,0,4,0">
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#212121"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               MaxWidth="130"
+                                                               ToolTip="{Binding Name}" />
+                                                    <TextBlock Text="{Binding LastPlayed, Converter={StaticResource LastPlayedToTimeConverter}}"
+                                                               FontSize="10"
+                                                               Foreground="#757575" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+
+                                        <!-- 右侧操作区：选账号下拉 + 启动按钮 -->
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <!-- 选账号下拉菜单 (仅在'所有游戏'视图下，且拥有关联账号时显示) -->
+                                            <Menu Background="Transparent"
+                                                  Tag="{Binding}"
+                                                  Margin="0,0,4,0">
+                                                <Menu.Visibility>
+                                                    <MultiBinding Converter="{StaticResource GameAccountMenuVisibilityConverter}">
+                                                        <Binding Path="DataContext.SelectedAccount" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                                        <Binding Path="AppId" />
+                                                    </MultiBinding>
+                                                </Menu.Visibility>
+                                                <MenuItem Padding="0" ItemsSource="{Binding AppId, Converter={StaticResource AppIdToAccountsConverter}}">
+                                                    <MenuItem.Header>
+                                                        <Border Background="#f5f5f5"
+                                                                BorderBrush="#e0e0e0"
+                                                                BorderThickness="1"
+                                                                CornerRadius="4"
+                                                                Padding="5,2"
+                                                                Cursor="Hand">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Converter={StaticResource GameToAccountNameConverter}}"
+                                                                           MaxWidth="52"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           FontSize="10"
+                                                                           Foreground="#673ab7"
+                                                                           FontWeight="SemiBold"
+                                                                           VerticalAlignment="Center" />
+                                                                <materialDesign:PackIcon Kind="MenuDown" Width="10" Height="10" Foreground="#673ab7" VerticalAlignment="Center" Margin="1,0,0,0" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </MenuItem.Header>
+                                                    <MenuItem.ItemContainerStyle>
+                                                        <Style TargetType="MenuItem">
+                                                            <Setter Property="Command" Value="{Binding Path=SelectGameAccountCommand, Source={x:Static manager:Lactor.TrayPopupViewModel}}" />
+                                                            <Setter Property="CommandParameter">
+                                                                <Setter.Value>
+                                                                    <MultiBinding Converter="{StaticResource ArrayMultiConverter}">
+                                                                        <Binding Path="Tag" RelativeSource="{RelativeSource AncestorType=Menu}" />
+                                                                        <Binding />
+                                                                    </MultiBinding>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Setter Property="Header" Value="{Binding Name}" />
+                                                            <Setter Property="FontSize" Value="11" />
+                                                            <Setter Property="Foreground" Value="#212121" />
+                                                            <Setter Property="Cursor" Value="Hand" />
+                                                        </Style>
+                                                    </MenuItem.ItemContainerStyle>
+                                                </MenuItem>
+                                            </Menu>
+
+                                            <!-- 启动小按钮 -->
+                                            <Button Command="{Binding DataContext.OpenSteamGameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource MaterialDesignIconButton}"
+                                                    Width="26"
+                                                    Height="26"
+                                                    Padding="0"
+                                                    Foreground="#16a34a"
+                                                    ToolTip="启动游戏">
+                                                <materialDesign:PackIcon Kind="PlayCircle" Width="20" Height="20" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- 空状态 -->
+                    <TextBlock Text="暂无关联游戏"
+                               FontSize="12"
+                               Foreground="#757575"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DisplayGames.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </Grid>
+
+            <Separator Grid.Row="3" Background="#e0e0e0" Margin="0" />
+
+            <!-- 底部 Footer -->
+            <Grid Grid.Row="4" Background="#fafafa" Height="40" Margin="12,0">
+                <!-- 开机自启动 -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
+                    <TextBlock Text="开机自启" FontSize="11" Foreground="#757575" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <ToggleButton IsChecked="{Binding IsLaunchOnSysPowerOn}"
+                                  Command="{Binding ToggleAutoStartCommand}"
+                                  VerticalAlignment="Center"
+                                  Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                </StackPanel>
+
+                <!-- 操作按钮 -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <!-- 登录新账号 -->
+                    <Button Style="{StaticResource MaterialDesignFlatButton}"
+                            Command="{Binding LoginSteamAccountCommand}"
+                            Foreground="#673ab7"
+                            Padding="8,4"
+                            Height="28"
+                            Margin="0,0,6,0"
+                            ToolTip="登录新账号">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="AccountPlus" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="登录" FontSize="11" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Button>
-                    <Button Width="30"
-                            Height="30"
-                            Command="{Binding OpenMainWindowCommand}"
-                            Style="{StaticResource MaterialDesignIconForegroundButton}"
-                            ToolTip="打开主界面">
-                        <materialDesign:PackIcon Kind="ViewDashboard" />
+
+                    <!-- 退出 -->
+                    <Button Style="{StaticResource MaterialDesignFlatButton}"
+                            Command="{Binding ExitCommand}"
+                            Foreground="#757575"
+                            Padding="8,4"
+                            Height="28"
+                            ToolTip="退出 SteamHub">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Power" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="退出" FontSize="11" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Button>
                 </StackPanel>
             </Grid>
-            <Separator Grid.Row="0"
-                       VerticalAlignment="Bottom"
-                       Margin="0,0,0,-5" />
-
-            <!-- Account/Game List Container -->
-            <Grid Grid.Row="1">
-                <!-- Account List -->
-                <ListBox ItemsSource="{Binding SteamAccounts}"
-                         VirtualizingStackPanel.IsVirtualizing="True"
-                         VirtualizingStackPanel.VirtualizationMode="Recycling"
-                         ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                         Height="200"
-                         Margin="0,5">
-                    <ListBox.Style>
-                        <Style TargetType="ListBox">
-                            <Setter Property="Visibility"
-                                    Value="Visible" />
-                            <Setter Property="Background"
-                                    Value="Transparent"/>
-                            <Setter Property="BorderThickness"
-                                    Value="0"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding ShowType}"
-                                             Value="SteamGame">
-                                    <Setter Property="Visibility"
-                                            Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ListBox.Style>
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Padding" Value="0" />
-                            <Setter Property="Margin" Value="0" />
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            <Setter Property="BorderThickness" Value="0" />
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                    Command="{Binding DataContext.SwitchSteamAccountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}"
-                                    HorizontalContentAlignment="Left"
-                                    HorizontalAlignment="Stretch"
-                                    Height="50"
-                                    Padding="10,0">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid Grid.Column="0"
-                                          Width="32"
-                                          Height="32">
-                                        <materialDesign:PackIcon Kind="QuestionMark"
-                                                                 Width="32"
-                                                                 Height="32"
-                                                                 HorizontalAlignment="Center"
-                                                                 VerticalAlignment="Center"
-                                                                 Opacity="0.5" />
-                                        <Image Source="{Binding Icon, Converter={StaticResource ByteToImageSourceConverter}}"
-                                               Stretch="UniformToFill" />
-                                    </Grid>
-                                    <StackPanel Grid.Column="1"
-                                                Margin="10,0,0,0"
-                                                VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Name}"
-                                                   FontWeight="Bold"
-                                                   TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Text="{Binding Account}"
-                                                   FontSize="12"
-                                                   Opacity="0.7"
-                                                   TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                </Grid>
-                            </Button>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-
-                <!-- Game List -->
-                <ListBox ItemsSource="{Binding SteamGames}"
-                         VirtualizingStackPanel.IsVirtualizing="True"
-                         VirtualizingStackPanel.VirtualizationMode="Recycling"
-                         ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                         Height="200"
-                         Margin="0,5">
-                    <ListBox.Style>
-                        <Style TargetType="ListBox">
-                            <Setter Property="Visibility"
-                                    Value="Collapsed" />
-                            <Setter Property="Background"
-                                    Value="Transparent"/>
-                            <Setter Property="BorderThickness"
-                                    Value="0"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding ShowType}"
-                                             Value="SteamGame">
-                                    <Setter Property="Visibility"
-                                            Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ListBox.Style>
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Padding" Value="0" />
-                            <Setter Property="Margin" Value="0" />
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            <Setter Property="BorderThickness" Value="0" />
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                    Command="{Binding DataContext.OpenSteamGameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}"
-                                    HorizontalContentAlignment="Left"
-                                    HorizontalAlignment="Stretch"
-                                    Height="50"
-                                    Padding="10,0">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid Grid.Column="0"
-                                          Width="32"
-                                          Height="32">
-                                        <materialDesign:PackIcon Kind="Controller"
-                                                                 Width="32"
-                                                                 Height="32"
-                                                                 HorizontalAlignment="Center"
-                                                                 VerticalAlignment="Center"
-                                                                 Opacity="0.5" />
-                                        <Image Source="{Binding Icon, Converter={StaticResource ByteToImageSourceConverter}}"
-                                               Stretch="UniformToFill" />
-                                    </Grid>
-                                    <StackPanel Grid.Column="1"
-                                                Margin="10,0,0,0"
-                                                VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Name}"
-                                                   FontWeight="Bold"
-                                                   TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                </Grid>
-                            </Button>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-
-                <!-- Empty State - Accounts -->
-                <TextBlock Text="暂无账号数据"
-                           FontSize="14"
-                           Foreground="Gray"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Margin="0,20">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility"
-                                    Value="Collapsed" />
-                            <Style.Triggers>
-                                <MultiDataTrigger>
-                                    <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding SteamAccounts.Count}"
-                                                   Value="0" />
-                                        <Condition Binding="{Binding ShowType}"
-                                                   Value="SteamAccount" />
-                                    </MultiDataTrigger.Conditions>
-                                    <Setter Property="Visibility"
-                                            Value="Visible" />
-                                </MultiDataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-
-                <!-- Empty State - Games -->
-                <TextBlock Text="暂无游戏数据"
-                           FontSize="14"
-                           Foreground="Gray"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Margin="0,20">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility"
-                                    Value="Collapsed" />
-                            <Style.Triggers>
-                                <MultiDataTrigger>
-                                    <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding SteamGames.Count}"
-                                                   Value="0" />
-                                        <Condition Binding="{Binding ShowType}"
-                                                   Value="SteamGame" />
-                                    </MultiDataTrigger.Conditions>
-                                    <Setter Property="Visibility"
-                                            Value="Visible" />
-                                </MultiDataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </Grid>
-
-            <Separator Grid.Row="1"
-                       VerticalAlignment="Bottom" />
-            <!-- Footer -->
-            <StackPanel Grid.Row="2"
-                        Margin="10">
-                <Grid Margin="15,5">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="RocketLaunch"
-                                                 VerticalAlignment="Center"
-                                                 Margin="0,0,10,0" />
-                        <TextBlock FontSize="13"
-                                   Text="开机自启动"
-                                   VerticalAlignment="Center" />
-                    </StackPanel>
-                    <ToggleButton  IsChecked="{Binding IsLaunchOnSysPowerOn}"
-                                   Command="{Binding ToggleAutoStartCommand}"
-                                   HorizontalAlignment="Right"
-                                   Style="{StaticResource MaterialDesignSwitchToggleButton}" />
-                </Grid>
-                <Button Style="{StaticResource MaterialDesignFlatButton}"
-                        Command="{Binding LoginSteamAccountCommand}"
-                        HorizontalContentAlignment="Left"
-                        MinHeight="40"
-                        Padding="15,10">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="AccountPlus"
-                                                 VerticalAlignment="Center"
-                                                 Margin="0,0,10,0" />
-                        <TextBlock Text="登录新账号" />
-                    </StackPanel>
-                </Button>
-                <Button Style="{StaticResource MaterialDesignFlatButton}"
-                        Command="{Binding ExitCommand}"
-                        HorizontalContentAlignment="Left"
-                        MinHeight="40"
-                        Padding="15,10">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="ExitToApp"
-                                                 VerticalAlignment="Center"
-                                                 Margin="0,0,10,0" />
-                        <TextBlock Text="退出" />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
         </Grid>
     </Border>
 </UserControl>

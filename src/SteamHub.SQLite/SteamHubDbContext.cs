@@ -32,11 +32,19 @@ public class SteamHubDbContext : DbContext
         get; set;
     }
 
+    /// <summary>
+    /// Steam 账号与游戏关系表
+    /// </summary>
+    public DbSet<SteamAccountGame> SteamAccountGames
+    {
+        get; set;
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
         {
-            var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "steamhub.db");
+            var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppConstants.DbFileName);
             optionsBuilder.UseSqlite($"Data Source={dbPath}");
         }
     }
@@ -54,6 +62,8 @@ public class SteamHubDbContext : DbContext
             entity.Property(e => e.SteamId).HasMaxLength(64);
             entity.Property(e => e.Name).HasMaxLength(64);
             entity.Property(e => e.Password).HasMaxLength(64);
+            entity.Property(e => e.GameCount).HasDefaultValue(0);
+            entity.Property(e => e.LastPlayed).HasDefaultValue(0);
         });
 
         // 配置表配置
@@ -72,7 +82,17 @@ public class SteamHubDbContext : DbContext
             entity.HasIndex(e => e.AppId);
             entity.Property(e => e.AppId).IsRequired().HasMaxLength(64);
             entity.Property(e => e.Name).HasMaxLength(64);
-            entity.Property(e => e.AccountSteamId).HasMaxLength(64);
+            entity.Property(e => e.CurrentSelectAccountSteamId).HasMaxLength(64);
+            entity.Property(e => e.LastPlayed).HasDefaultValue(0);
+        });
+
+        // Steam 账号与游戏关系配置
+        modelBuilder.Entity<SteamAccountGame>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.SteamId, e.AppId });
+            entity.Property(e => e.SteamId).IsRequired().HasMaxLength(64);
+            entity.Property(e => e.AppId).IsRequired().HasMaxLength(64);
         });
     }
 }

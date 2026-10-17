@@ -69,11 +69,27 @@ public class SteamAccount
         get; set;
     }
 
+    /// <summary>
+    /// 账号拥有的游戏数量
+    /// </summary>
+    public int GameCount
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// 最新游戏时间
+    /// </summary>
+    public long LastPlayed
+    {
+        get; set;
+    }
+
     public SteamAccount()
     {
     }
 
-    public SteamAccount(Guid id, string steamId, string account, string name, string password, int order, byte[] icon)
+    public SteamAccount(Guid id, string steamId, string account, string name, string password, int order, byte[] icon, int gameCount = 0, long lastPlayed = 0)
     {
         Id = id;
         SteamId = steamId;
@@ -82,5 +98,7 @@ public class SteamAccount
         Password = password;
         Order = order;
         Icon = icon;
+        GameCount = gameCount;
+        LastPlayed = lastPlayed;
     }
 }

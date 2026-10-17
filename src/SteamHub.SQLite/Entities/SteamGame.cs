@@ -22,14 +22,6 @@ public class SteamGame
     }
 
     /// <summary>
-    /// 所属账号
-    /// </summary>
-    public string AccountSteamId
-    {
-        get; set;
-    }
-
-    /// <summary>
     /// 游戏名称
     /// </summary>
     public string Name
@@ -46,17 +38,25 @@ public class SteamGame
     }
 
     /// <summary>
-    /// 排序序号
+    /// 是否已删除
     /// </summary>
-    public int Order
+    public bool IsDeleted
     {
         get; set;
     }
 
     /// <summary>
-    /// 是否已删除
+    /// 当前选中的启动账号 SteamId
     /// </summary>
-    public bool IsDeleted
+    public string CurrentSelectAccountSteamId
+    {
+        get; set;
+    } = string.Empty;
+
+    /// <summary>
+    /// 上次游玩时间 (Unix 时间戳)
+    /// </summary>
+    public long LastPlayed
     {
         get; set;
     }
@@ -65,13 +65,12 @@ public class SteamGame
     {
     }
 
-    public SteamGame(Guid id, string appId, string name, byte[] icon, string accountSteamId, int order)
+    public SteamGame(Guid id, string appId, string name, byte[] icon, long lastPlayed = 0)
     {
         Id = id;
         AppId = appId;
         Name = name;
         Icon = icon;
-        AccountSteamId = accountSteamId;
-        Order = order;
+        LastPlayed = lastPlayed;
     }
 }

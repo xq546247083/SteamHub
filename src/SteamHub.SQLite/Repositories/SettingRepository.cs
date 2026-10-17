@@ -1,4 +1,3 @@
-﻿using Newtonsoft.Json;
 using SteamHub.Entities;
 
 namespace SteamHub.Repositories
@@ -43,62 +42,5 @@ namespace SteamHub.Repositories
 
             context.SaveChanges();
         }
-
-        #region 设置进程
-
-        /// <summary>
-        /// 获取进程列表
-        /// </summary>
-        public static List<string> GetKillProcessList()
-        {
-            var json = GetValue("killprocess");
-            if (string.IsNullOrEmpty(json))
-            {
-                return new List<string>();
-            }
-
-            try
-            {
-                return JsonConvert.DeserializeObject<List<string>>(json) ?? new List<string>();
-            }
-            catch
-            {
-                return new List<string>();
-            }
-        }
-
-        /// <summary>
-        /// 设置进程列表
-        /// </summary>
-        public static void SetKillProcessList(List<string> processes)
-        {
-            var json = JsonConvert.SerializeObject(processes);
-            SetValue("killprocess", json);
-        }
-
-        /// <summary>
-        /// 添加进程到列表
-        /// </summary>
-        public static void AddKillProcess(string processName)
-        {
-            var processes = GetKillProcessList();
-            if (!processes.Contains(processName))
-            {
-                processes.Insert(0, processName);
-                SetKillProcessList(processes);
-            }
-        }
-
-        /// <summary>
-        /// 从列表中删除进程
-        /// </summary>
-        public static void DeleteKillProcess(string processName)
-        {
-            var processes = GetKillProcessList();
-            processes.Remove(processName);
-            SetKillProcessList(processes);
-        }
-
-        #endregion
     }
 }

@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SteamHub.Entities;
-using SteamHub.Helper;
+using SteamHub.Manager;
 using SteamHub.Repositories;
 using System.Collections.ObjectModel;
 
@@ -24,10 +24,16 @@ namespace SteamHub.ViewModel
         private string searchSteamGameName;
 
         /// <summary>
-        /// 过滤Steam账号
+        /// 所有游戏总数
         /// </summary>
         [ObservableProperty]
-        private SteamAccount searchSteamAccount;
+        private int totalGameCount;
+
+        /// <summary>
+        /// 当前选中账号游戏数
+        /// </summary>
+        [ObservableProperty]
+        private int currentAccountGameCount;
 
         #endregion
 
@@ -36,17 +42,7 @@ namespace SteamHub.ViewModel
         /// <summary>
         /// 搜索游戏名称改变
         /// </summary>
-        /// <param name="value"></param>
         partial void OnSearchSteamGameNameChanged(string value)
-        {
-            LoadSteamGames();
-        }
-
-        /// <summary>
-        /// 过滤Steam账号改变
-        /// </summary>
-        /// <param name="value"></param>
-        partial void OnSearchSteamAccountChanged(SteamAccount value)
         {
             LoadSteamGames();
         }
@@ -56,7 +52,7 @@ namespace SteamHub.ViewModel
         #region 绑定方法
 
         /// <summary>
-        /// 打开Steam游戏
+        /// 打开Steam游戏 (点击卡片或启动按钮)
         /// </summary>
         /// <param name="game">游戏</param>
         [RelayCommand]
@@ -67,17 +63,57 @@ namespace SteamHub.ViewModel
                 return;
             }
 
-            // 先切换账号
-            var (success, currentLoginAccount) = RegistryHelper.Get(@"Software\Valve\Steam", "AutoLoginUser");
-            var steamAccount = SteamAccountRepository.GetBySteamId(game.AccountSteamId);
-            if (success && steamAccount != null && currentLoginAccount?.ToString() != steamAccount.Account)
+            // 如果当前在特定账号视图下，直接使用该账号启动
+            var targetAccount = string.Empty;
+            if (!AppGlobalData.IsDefaultAccount(SelectedAccount))
             {
-                var processList = SettingRepository.GetKillProcessList();
-                SteamTool.Open(steamAccount.Account, processList);
+                targetAccount = SelectedAccount.Account;
+            }
+            else
+            {
+                // 在"全部游戏"视图下
+                string targetSteamId = game.CurrentSelectAccountSteamId;
+                if (string.IsNullOrEmpty(targetSteamId))
+                {
+                    var accounts = SteamAccountRepository.GetAccountsByAppId(game.AppId);
+                    targetSteamId = accounts?.FirstOrDefault()?.SteamId;
+                }
+
+                if (!string.IsNullOrEmpty(targetSteamId))
+                {
+                    var targetAcc = SteamAccountRepository.GetBySteamId(targetSteamId);
+                    targetAccount = targetAcc?.Account;
+                }
             }
 
-            // 再打开游戏
-            SteamTool.OpenGame(game.AppId);
+            SteamTool.OpenAccountAndGame(targetAccount, game.AppId);
+        }
+
+        /// <summary>
+        /// 切换并指定游戏的启动账号
+        /// </summary>
+        /// <param name="parameter">参数数组: [0] 为 SteamGame, [1] 为 SteamAccount</param>
+        [RelayCommand]
+        private void SelectGameAccount(object parameter)
+        {
+            SteamGame game = null;
+            SteamAccount account = null;
+
+            if (parameter is object[] arr && arr.Length >= 2)
+            {
+                game = arr[0] as SteamGame;
+                account = arr[1] as SteamAccount;
+            }
+
+            if (game == null || account == null)
+            {
+                return;
+            }
+
+            // 设置关联
+            SteamGameRepository.UpdateCurrentSelectAccount(game.AppId, account.SteamId);
+            LoadSteamGames();
+            Lactor.ShowToolTip($"已设置【{game.Name}】启动账号: {account.Name}");
         }
 
         #endregion
@@ -85,32 +121,22 @@ namespace SteamHub.ViewModel
         #region 私有方法
 
         /// <summary>
-        /// 应用游戏过滤
+        /// 加载并应用游戏过滤
         /// </summary>
         private void LoadSteamGames()
         {
-            var allSteamGames = SteamGameRepository.GetAll();
-            if (allSteamGames == null)
-            {
-                SteamGames = new ObservableCollection<SteamGame>();
-                return;
-            }
+            // 查询总数
+            TotalGameCount = SteamGameRepository.GetAll()?.Count ?? 0;
 
-            var query = allSteamGames.AsEnumerable();
-
-            // 过滤账号
-            if (SearchSteamAccount != null)
-            {
-                query = query.Where(g => g.AccountSteamId == SearchSteamAccount.SteamId);
-            }
-
-            // 过滤名称
+            // 过滤游戏名称
+            var tempGames = (AppGlobalData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll() : SteamGameRepository.GetBySteamId(SelectedAccount.SteamId)) ?? [];
+            var query = tempGames.AsEnumerable();
             if (!string.IsNullOrWhiteSpace(SearchSteamGameName))
             {
                 query = query.Where(g => g.Name != null && g.Name.Contains(SearchSteamGameName, StringComparison.OrdinalIgnoreCase));
             }
-
-            SteamGames = new ObservableCollection<SteamGame>(query);
+            SteamGames = new ObservableCollection<SteamGame>(query.ToList());
+            CurrentAccountGameCount = SteamGames.Count;
         }
 
         #endregion
