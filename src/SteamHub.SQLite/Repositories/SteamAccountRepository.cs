@@ -9,26 +9,18 @@ namespace SteamHub.Repositories
     public static class SteamAccountRepository
     {
         /// <summary>
-        /// 获取所有未删除账号
+        /// 获取所有账号
         /// </summary>
-        public static List<SteamAccount> GetAll()
+        /// <param name="includeHidden">是否包含已隐藏账号</param>
+        public static List<SteamAccount> GetAll(bool includeHidden = false)
         {
             using var context = new SteamHubDbContext();
-            return context.SteamAccounts
-                .Where(a => !a.IsDeleted)
-                .OrderBy(a => a.Order)
-                .ThenBy(a => a.Account)
-                .ToList();
-        }
-
-        /// <summary>
-        /// 获取所有已删除账号
-        /// </summary>
-        public static List<SteamAccount> GetDeletedList()
-        {
-            using var context = new SteamHubDbContext();
-            return context.SteamAccounts
-                .Where(a => a.IsDeleted)
+            var query = context.SteamAccounts.AsQueryable();
+            if (!includeHidden)
+            {
+                query = query.Where(a => !a.IsHidden);
+            }
+            return query
                 .OrderBy(a => a.Order)
                 .ThenBy(a => a.Account)
                 .ToList();
@@ -53,6 +45,22 @@ namespace SteamHub.Repositories
         }
 
         /// <summary>
+        /// 设置账号隐藏状态
+        /// </summary>
+        /// <param name="account">账号名称</param>
+        /// <param name="isHidden">是否隐藏</param>
+        public static void SetHidden(string account, bool isHidden)
+        {
+            using var context = new SteamHubDbContext();
+            var entity = context.SteamAccounts.FirstOrDefault(a => a.Account == account);
+            if (entity != null)
+            {
+                entity.IsHidden = isHidden;
+                context.SaveChanges();
+            }
+        }
+
+        /// <summary>
         /// 获取拥有指定游戏的所有真实账号列表
         /// </summary>
         /// <param name="appId">游戏 AppId</param>
@@ -68,7 +76,7 @@ namespace SteamHub.Repositories
 
             return (from rel in context.SteamAccountGames
                     join acc in context.SteamAccounts on rel.SteamId equals acc.SteamId
-                    where rel.AppId == appId && !rel.IsDeleted && !acc.IsDeleted
+                    where rel.AppId == appId && !acc.IsHidden
                     orderby rel.LastPlayed descending, acc.Order ascending
                     select acc).ToList();
         }
@@ -92,47 +100,7 @@ namespace SteamHub.Repositories
             }
         }
 
-        /// <summary>
-        /// 删除账号
-        /// </summary>
-        public static void Delete(string account)
-        {
-            using var context = new SteamHubDbContext();
-            var entity = context.SteamAccounts.FirstOrDefault(a => a.Account == account);
-            if (entity != null)
-            {
-                entity.IsDeleted = true;
-                context.SaveChanges();
-            }
-        }
 
-        /// <summary>
-        /// 恢复回收站账号
-        /// </summary>
-        public static void RestoreRecycleBin()
-        {
-            using var context = new SteamHubDbContext();
-            var deletedAccounts = context.SteamAccounts.Where(a => a.IsDeleted).ToList();
-            if (deletedAccounts.Any())
-            {
-                deletedAccounts.ForEach(r => r.IsDeleted = false);
-                context.SaveChanges();
-            }
-        }
-
-        /// <summary>
-        /// 清空回收站
-        /// </summary>
-        public static void EmptyRecycleBin()
-        {
-            using var context = new SteamHubDbContext();
-            var deletedAccounts = context.SteamAccounts.Where(a => a.IsDeleted).ToList();
-            if (deletedAccounts.Any())
-            {
-                context.SteamAccounts.RemoveRange(deletedAccounts);
-                context.SaveChanges();
-            }
-        }
 
         /// <summary>
         /// 检查账号是否存在

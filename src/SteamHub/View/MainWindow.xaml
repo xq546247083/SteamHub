@@ -255,14 +255,15 @@
                                 <Separator Margin="0,0,0,12" Background="#e2e8f0" />
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                            Command="{Binding DeleteSteamAccountCommand}"
-                                            Foreground="#ef4444"
+                                            Command="{Binding ToggleHideSteamAccountCommand}"
+                                            CommandParameter="{Binding EditSteamAccountAccount}"
+                                            Foreground="#64748b"
                                             Padding="6"
                                             Height="Auto"
                                             Margin="0,0,8,0">
                                         <StackPanel>
-                                            <materialDesign:PackIcon Kind="Delete" HorizontalAlignment="Center" Width="18" Height="18" Margin="0,0,0,2" />
-                                            <TextBlock Text="删除" FontSize="11" HorizontalAlignment="Center" />
+                                            <materialDesign:PackIcon Kind="EyeOffOutline" HorizontalAlignment="Center" Width="18" Height="18" Margin="0,0,0,2" />
+                                            <TextBlock Text="隐藏" FontSize="11" HorizontalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
                                     <Button Style="{StaticResource MaterialDesignFlatButton}"
@@ -333,14 +334,15 @@
                                 <Separator Margin="0,0,0,12" Background="#e2e8f0" />
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                            Command="{Binding DeleteSteamGameCommand}"
-                                            Foreground="#ef4444"
+                                            Command="{Binding ToggleHideSteamGameCommand}"
+                                            CommandParameter="{Binding EditSteamGameAppId}"
+                                            Foreground="#64748b"
                                             Padding="6"
                                             Height="Auto"
                                             Margin="0,0,8,0">
                                         <StackPanel>
-                                            <materialDesign:PackIcon Kind="Delete" HorizontalAlignment="Center" Width="18" Height="18" Margin="0,0,0,2" />
-                                            <TextBlock Text="删除" FontSize="11" HorizontalAlignment="Center" />
+                                            <materialDesign:PackIcon Kind="EyeOffOutline" HorizontalAlignment="Center" Width="18" Height="18" Margin="0,0,0,2" />
+                                            <TextBlock Text="隐藏" FontSize="11" HorizontalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
                                     <Button Style="{StaticResource MaterialDesignFlatButton}"
@@ -357,102 +359,7 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Recycle Bin -->
-                        <Grid Margin="16">
-                            <Grid.Style>
-                                <Style TargetType="Grid">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding DrawerType}" Value="SteamAccountRecycleBin">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding DrawerType}" Value="SteamGameRecycleBin">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Grid.Style>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0" Margin="0,0,0,16">
-                                <TextBlock Text="回收站"
-                                           FontSize="15"
-                                           FontWeight="Bold"
-                                           Foreground="#0f172a"
-                                           HorizontalAlignment="Left"
-                                           VerticalAlignment="Center" />
-                                <Button Width="28"
-                                        Height="28"
-                                        Foreground="#64748b"
-                                        Style="{StaticResource MaterialDesignIconButton}"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Command="{Binding CloseRecycleBinDrawerCommand}"
-                                        ToolTip="关闭">
-                                    <materialDesign:PackIcon Kind="Close" Width="18" Height="18" />
-                                </Button>
-                            </Grid>
-
-                            <!-- Items List -->
-                            <Grid Grid.Row="2">
-                                <ListBox ItemsSource="{Binding DeletedSteamGames}"
-                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                         ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                    <ListBox.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <vwp:VirtualizingWrapPanel IsItemsHost="True" />
-                                        </ItemsPanelTemplate>
-                                    </ListBox.ItemsPanel>
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Width="70" Height="90" Background="#f8fafc" BorderBrush="#e2e8f0" BorderThickness="1" CornerRadius="4" Margin="3">
-                                                <Grid>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="60" />
-                                                        <RowDefinition Height="*" />
-                                                    </Grid.RowDefinitions>
-                                                    <Image Source="{Binding Icon, Converter={StaticResource ByteToImageSourceConverter}}" Stretch="Uniform" Margin="4" />
-                                                    <TextBlock Grid.Row="1" Text="{Binding Name}" Foreground="#334155" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="2" />
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </Grid>
-
-                            <!-- Actions Section -->
-                            <StackPanel Grid.Row="3">
-                                <Separator Margin="0,0,0,12" Background="#e2e8f0" />
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                            Command="{Binding RestoreRecycleBinCommand}"
-                                            Foreground="#673ab7"
-                                            Padding="6"
-                                            Height="Auto"
-                                            Margin="0,0,8,0">
-                                        <StackPanel>
-                                            <materialDesign:PackIcon Kind="Restore" HorizontalAlignment="Center" Width="18" Height="18" Margin="0,0,0,2" />
-                                            <TextBlock Text="恢复" FontSize="11" HorizontalAlignment="Center" />
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                            Command="{Binding EmptyRecycleBinCommand}"
-                                            Foreground="#ef4444"
-                                            Padding="6"
-                                            Height="Auto">
-                                        <StackPanel>
-                                            <materialDesign:PackIcon Kind="DeleteForever" HorizontalAlignment="Center" Width="18" Height="18" Margin="0,0,0,2" />
-                                            <TextBlock Text="清空" FontSize="11" HorizontalAlignment="Center" />
-                                        </StackPanel>
-                                    </Button>
-                                </StackPanel>
-                            </StackPanel>
-                        </Grid>
                     </Grid>
                 </Border>
             </materialDesign:DrawerHost.RightDrawerContent>
@@ -478,20 +385,7 @@
 
                     <!-- 右侧：快捷工具 -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0">
-                        <!-- 回收站 -->
-                        <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                Command="{Binding OpenRecycleBinDrawerCommand}"
-                                CommandParameter="Game"
-                                ToolTip="回收站"
-                                Foreground="#673ab7"
-                                Padding="8,4"
-                                Height="32"
-                                Margin="0,0,6,0">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="DeleteOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0" />
-                                <TextBlock Text="回收站" FontSize="12" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
+
 
                         <!-- 刷新数据 -->
                         <Button Style="{StaticResource MaterialDesignFlatButton}"
@@ -565,6 +459,15 @@
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Grid Height="56" Background="Transparent">
+                                        <Grid.Style>
+                                            <Style TargetType="Grid">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsHidden}" Value="True">
+                                                        <Setter Property="Opacity" Value="0.5" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Grid.Style>
                                         <Grid.InputBindings>
                                             <MouseBinding MouseAction="LeftClick"
                                                           Command="{Binding DataContext.SelectSteamAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -686,18 +589,27 @@
                                                             </MenuItem.Icon>
                                                         </MenuItem>
                                                         <Separator Margin="0,2" Background="#f1f5f9" />
-                                                        <MenuItem Header="编辑账号"
+                                                         <MenuItem Header="编辑账号"
                                                                   Command="{Binding Path=OpenEditSteamAccountDrawerCommand, Source={x:Static manager:Lactor.MainViewModel}}"
                                                                   CommandParameter="{Binding}">
                                                             <MenuItem.Icon>
                                                                 <materialDesign:PackIcon Kind="SquareEditOutline" Width="14" Height="14" Foreground="#3b82f6" />
                                                             </MenuItem.Icon>
                                                         </MenuItem>
-                                                        <MenuItem Header="删除账号"
-                                                                  Command="{Binding Path=DeleteSteamAccountCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                        <MenuItem Header="隐藏账号"
+                                                                  Visibility="{Binding IsHidden, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                                                  Command="{Binding Path=ToggleHideSteamAccountCommand, Source={x:Static manager:Lactor.MainViewModel}}"
                                                                   CommandParameter="{Binding Account}">
                                                             <MenuItem.Icon>
-                                                                <materialDesign:PackIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="#ef4444" />
+                                                                <materialDesign:PackIcon Kind="EyeOffOutline" Width="14" Height="14" Foreground="#ef4444" />
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                        <MenuItem Header="取消隐藏"
+                                                                  Visibility="{Binding IsHidden, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                                  Command="{Binding Path=ToggleHideSteamAccountCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                  CommandParameter="{Binding Account}">
+                                                            <MenuItem.Icon>
+                                                                <materialDesign:PackIcon Kind="EyeOutline" Width="14" Height="14" Foreground="#10b981" />
                                                             </MenuItem.Icon>
                                                         </MenuItem>
                                                     </ContextMenu>
@@ -749,7 +661,7 @@
                                 </Border>
                             </StackPanel>
 
-                            <!-- 右侧操作区：搜索框 -->
+                            <!-- 右侧操作区：搜索框与隐藏项目切换 -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
                                 <TextBox Width="210"
                                          Height="34"
@@ -763,6 +675,21 @@
                                          materialDesign:HintAssist.Hint="搜索游戏名称..."
                                          Text="{Binding SearchSteamGameName, UpdateSourceTrigger=PropertyChanged}"
                                          materialDesign:TextFieldAssist.HasClearButton="True" />
+
+                                <!-- 切换显示已隐藏项目 -->
+                                <ToggleButton IsChecked="{Binding ShowHidden}"
+                                              ToolTip="显示已隐藏项目"
+                                              Margin="10,0,0,0"
+                                              Width="34" Height="34"
+                                              Cursor="Hand"
+                                              Style="{StaticResource MaterialDesignActionLightToggleButton}">
+                                    <ToggleButton.Content>
+                                        <materialDesign:PackIcon Kind="EyeOffOutline" Width="18" Height="18" Foreground="#94a3b8" />
+                                    </ToggleButton.Content>
+                                    <materialDesign:ToggleButtonAssist.OnContent>
+                                        <materialDesign:PackIcon Kind="EyeOutline" Width="18" Height="18" Foreground="#673ab7" />
+                                    </materialDesign:ToggleButtonAssist.OnContent>
+                                </ToggleButton>
                             </StackPanel>
                         </Grid>
 
@@ -809,6 +736,9 @@
                                                             </Setter.Value>
                                                         </Setter>
                                                     </Trigger>
+                                                    <DataTrigger Binding="{Binding IsHidden}" Value="True">
+                                                        <Setter Property="Opacity" Value="0.55" />
+                                                    </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
@@ -839,6 +769,16 @@
                                                         <GradientStop Color="#fa0f172a" Offset="1" />
                                                     </LinearGradientBrush>
                                                 </Border.Background>
+                                            </Border>
+
+                                            <!-- 3.5 已隐藏状态角标 -->
+                                            <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"
+                                                    Background="#cc0f172a" CornerRadius="4" Padding="5,2"
+                                                    Visibility="{Binding IsHidden, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="EyeOffOutline" Width="12" Height="12" Foreground="#cbd5e1" VerticalAlignment="Center" Margin="0,0,3,0" />
+                                                    <TextBlock Text="已隐藏" FontSize="10" FontWeight="SemiBold" Foreground="#cbd5e1" VerticalAlignment="Center" />
+                                                </StackPanel>
                                             </Border>
 
                                             <!-- 4. 内容布局 -->
@@ -897,11 +837,20 @@
                                                                     <materialDesign:PackIcon Kind="SquareEditOutline" Width="14" Height="14" Foreground="#3b82f6" />
                                                                 </MenuItem.Icon>
                                                             </MenuItem>
-                                                            <MenuItem Header="删除游戏"
-                                                                      Command="{Binding Path=DeleteSteamGameCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                            <MenuItem Header="隐藏游戏"
+                                                                      Visibility="{Binding IsHidden, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                                                      Command="{Binding Path=ToggleHideSteamGameCommand, Source={x:Static manager:Lactor.MainViewModel}}"
                                                                       CommandParameter="{Binding AppId}">
                                                                 <MenuItem.Icon>
-                                                                    <materialDesign:PackIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="#ef4444" />
+                                                                    <materialDesign:PackIcon Kind="EyeOffOutline" Width="14" Height="14" Foreground="#ef4444" />
+                                                                </MenuItem.Icon>
+                                                            </MenuItem>
+                                                            <MenuItem Header="取消隐藏"
+                                                                      Visibility="{Binding IsHidden, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                                      Command="{Binding Path=ToggleHideSteamGameCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                      CommandParameter="{Binding AppId}">
+                                                                <MenuItem.Icon>
+                                                                    <materialDesign:PackIcon Kind="EyeOutline" Width="14" Height="14" Foreground="#10b981" />
                                                                 </MenuItem.Icon>
                                                             </MenuItem>
                                                         </ContextMenu>

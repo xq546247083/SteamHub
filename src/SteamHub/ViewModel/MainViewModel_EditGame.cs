@@ -49,10 +49,10 @@ namespace SteamHub.ViewModel
         }
 
         /// <summary>
-        /// 删除steam游戏信息 (支持列表直接传参或抽屉当前游戏)
+        /// 切换游戏隐藏状态 (支持列表直接传参或抽屉当前游戏)
         /// </summary>
         [RelayCommand]
-        private void DeleteSteamGame(string appId)
+        private void ToggleHideSteamGame(string appId)
         {
             var target = string.IsNullOrEmpty(appId) ? editSteamGameAppId : appId;
             if (string.IsNullOrEmpty(target))
@@ -61,11 +61,19 @@ namespace SteamHub.ViewModel
                 return;
             }
 
-            SteamGameRepository.Delete(target);
+            var game = SteamGameRepository.GetByAppId(target);
+            if (game == null)
+            {
+                DrawerType = DrawerType.None;
+                return;
+            }
+
+            bool newHidden = !game.IsHidden;
+            SteamGameRepository.SetHidden(target, newHidden);
 
             DrawerType = DrawerType.None;
             Lactor.ReLoad();
-            Lactor.ShowToolTip("删除成功！");
+            Lactor.ShowToolTip(newHidden ? "已隐藏游戏！" : "已取消隐藏游戏！");
         }
 
         /// <summary>

@@ -29,7 +29,6 @@ public static class SteamAccountGameRepository
                 {
                     existing.LastPlayed = item.LastPlayed;
                 }
-                existing.IsDeleted = false;
             }
             else
             {
@@ -42,20 +41,6 @@ public static class SteamAccountGameRepository
         }
 
         context.SaveChanges();
-    }
-
-    /// <summary>
-    /// 删除账号和游戏的关联关系 (软删除)
-    /// </summary>
-    public static void Delete(string steamId, string appId)
-    {
-        using var context = new SteamHubDbContext();
-        var existing = context.SteamAccountGames.FirstOrDefault(r => r.SteamId == steamId && r.AppId == appId);
-        if (existing != null)
-        {
-            existing.IsDeleted = true;
-            context.SaveChanges();
-        }
     }
 
     /// <summary>

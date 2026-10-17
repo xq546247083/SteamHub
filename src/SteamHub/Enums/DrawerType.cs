@@ -18,16 +18,6 @@ namespace SteamHub.Enums
         /// <summary>
         /// 游戏
         /// </summary>
-        SteamGame,
-
-        /// <summary>
-        /// 账号回收站
-        /// </summary>
-        SteamAccountRecycleBin,
-
-        /// <summary>
-        /// 游戏回收站
-        /// </summary>
-        SteamGameRecycleBin,
+        SteamGame
     }
 }

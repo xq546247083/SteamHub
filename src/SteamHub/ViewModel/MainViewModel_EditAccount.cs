@@ -94,10 +94,10 @@ namespace SteamHub.ViewModel
         }
 
         /// <summary>
-        /// 删除steam账号信息
+        /// 切换steam账号隐藏状态
         /// </summary>
         [RelayCommand]
-        private void DeleteSteamAccount(string account)
+        private void ToggleHideSteamAccount(string account)
         {
             var target = string.IsNullOrEmpty(account) ? EditSteamAccountAccount : account;
             if (string.IsNullOrEmpty(target))
@@ -105,16 +105,18 @@ namespace SteamHub.ViewModel
                 return;
             }
 
-            if (!SteamAccountRepository.Exists(target))
+            var existing = SteamAccountRepository.GetByAccount(target);
+            if (existing == null)
             {
                 return;
             }
 
-            SteamAccountRepository.Delete(target);
+            bool newHidden = !existing.IsHidden;
+            SteamAccountRepository.SetHidden(target, newHidden);
 
             DrawerType = DrawerType.None;
             Lactor.ReLoad();
-            Lactor.ShowToolTip("删除成功！");
+            Lactor.ShowToolTip(newHidden ? "已隐藏账号！" : "已取消隐藏账号！");
         }
 
         /// <summary>

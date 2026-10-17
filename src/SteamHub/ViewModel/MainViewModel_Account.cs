@@ -84,7 +84,7 @@ namespace SteamHub.ViewModel
             var previousSelectedSteamId = SelectedAccount?.SteamId;
 
             // 获取账号列表
-            var accounts = SteamAccountRepository.GetAll();
+            var accounts = SteamAccountRepository.GetAll(ShowHidden);
             var list = new List<SteamAccount> { AppGlobalData.DefaultSteamAccount };
             if (accounts != null)
             {

@@ -9,13 +9,18 @@ namespace SteamHub.Repositories
     public static class SteamGameRepository
     {
         /// <summary>
-        /// 获取所有未删除游戏 (统一按最新游戏时间倒序排序)
+        /// 获取所有游戏 (统一按最新游戏时间倒序排序)
         /// </summary>
-        public static List<SteamGame> GetAll()
+        /// <param name="includeHidden">是否包含已隐藏游戏</param>
+        public static List<SteamGame> GetAll(bool includeHidden = false)
         {
             using var context = new SteamHubDbContext();
-            return context.SteamGames
-                .Where(g => !g.IsDeleted)
+            var query = context.SteamGames.AsQueryable();
+            if (!includeHidden)
+            {
+                query = query.Where(g => !g.IsHidden);
+            }
+            return query
                 .OrderByDescending(g => g.LastPlayed)
                 .ThenBy(g => g.Name)
                 .ToList();
@@ -25,8 +30,9 @@ namespace SteamHub.Repositories
         /// 根据 SteamId 获取该账号拥有的游戏列表 (按该账号游玩该游戏的时间倒序排序)
         /// </summary>
         /// <param name="steamId">账号 SteamId</param>
+        /// <param name="includeHidden">是否包含已隐藏游戏</param>
         /// <returns>游戏列表</returns>
-        public static List<SteamGame> GetBySteamId(string steamId)
+        public static List<SteamGame> GetBySteamId(string steamId, bool includeHidden = false)
         {
             if (string.IsNullOrEmpty(steamId))
             {
@@ -35,23 +41,20 @@ namespace SteamHub.Repositories
 
             using var context = new SteamHubDbContext();
 
-            return (from rel in context.SteamAccountGames
-                    join game in context.SteamGames on rel.AppId equals game.AppId
-                    where rel.SteamId == steamId && !rel.IsDeleted && !game.IsDeleted
-                    orderby rel.LastPlayed descending, game.Name ascending
-                    select game).ToList();
-        }
+            var query = from rel in context.SteamAccountGames
+                        join game in context.SteamGames on rel.AppId equals game.AppId
+                        where rel.SteamId == steamId
+                        select new { rel, game };
 
-        /// <summary>
-        /// 获取所有已删除游戏 (回收站，按游戏时间倒序)
-        /// </summary>
-        public static List<SteamGame> GetListOfDeleted()
-        {
-            using var context = new SteamHubDbContext();
-            return context.SteamGames
-                .Where(g => g.IsDeleted)
-                .OrderByDescending(g => g.LastPlayed)
-                .ThenBy(g => g.Name)
+            if (!includeHidden)
+            {
+                query = query.Where(x => !x.game.IsHidden);
+            }
+
+            return query
+                .OrderByDescending(x => x.rel.LastPlayed)
+                .ThenBy(x => x.game.Name)
+                .Select(x => x.game)
                 .ToList();
         }
 
@@ -188,46 +191,30 @@ namespace SteamHub.Repositories
         }
 
         /// <summary>
-        /// 删除游戏 (软删除)
+        /// 设置游戏隐藏状态
         /// </summary>
-        public static void Delete(string appId)
+        /// <param name="appId">游戏 AppId</param>
+        /// <param name="isHidden">是否隐藏</param>
+        public static void SetHidden(string appId, bool isHidden)
         {
             using var context = new SteamHubDbContext();
             var entity = context.SteamGames.FirstOrDefault(g => g.AppId == appId);
             if (entity != null)
             {
-                entity.IsDeleted = true;
+                entity.IsHidden = isHidden;
                 context.SaveChanges();
             }
         }
 
         /// <summary>
-        /// 恢复游戏 (回收站)
+        /// 隐藏游戏
         /// </summary>
-        public static void RestoreRecycleBin()
-        {
-            using var context = new SteamHubDbContext();
-            var deletedGames = context.SteamGames.Where(g => g.IsDeleted).ToList();
-            if (deletedGames.Any())
-            {
-                deletedGames.ForEach(r => r.IsDeleted = false);
-                context.SaveChanges();
-            }
-        }
+        public static void Hide(string appId) => SetHidden(appId, true);
 
         /// <summary>
-        /// 清空回收站
+        /// 取消隐藏游戏
         /// </summary>
-        public static void EmptyRecycleBin()
-        {
-            using var context = new SteamHubDbContext();
-            var deletedGames = context.SteamGames.Where(g => g.IsDeleted).ToList();
-            if (deletedGames.Any())
-            {
-                context.SteamGames.RemoveRange(deletedGames);
-                context.SaveChanges();
-            }
-        }
+        public static void Unhide(string appId) => SetHidden(appId, false);
 
         /// <summary>
         /// 检查游戏是否存在

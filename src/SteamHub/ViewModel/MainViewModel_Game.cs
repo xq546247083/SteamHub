@@ -126,10 +126,10 @@ namespace SteamHub.ViewModel
         private void LoadSteamGames()
         {
             // 查询总数
-            TotalGameCount = SteamGameRepository.GetAll()?.Count ?? 0;
+            TotalGameCount = SteamGameRepository.GetAll(false)?.Count ?? 0;
 
             // 过滤游戏名称
-            var tempGames = (AppGlobalData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll() : SteamGameRepository.GetBySteamId(SelectedAccount.SteamId)) ?? [];
+            var tempGames = (AppGlobalData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll(ShowHidden) : SteamGameRepository.GetBySteamId(SelectedAccount.SteamId, ShowHidden)) ?? [];
             var query = tempGames.AsEnumerable();
             if (!string.IsNullOrWhiteSpace(SearchSteamGameName))
             {

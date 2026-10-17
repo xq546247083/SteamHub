@@ -42,6 +42,12 @@ namespace SteamHub.ViewModel
         private string appTitle;
 
         /// <summary>
+        /// 是否显示隐藏
+        /// </summary>
+        [ObservableProperty]
+        private bool showHidden;
+
+        /// <summary>
         /// Snackbar消息队列
         /// </summary>
         public SnackbarMessageQueue SnackbarMessageQueue
@@ -116,6 +122,19 @@ namespace SteamHub.ViewModel
 
         #endregion
 
+        #region 属性变化引发的事件
+
+        /// <summary>
+        /// 显示已隐藏游戏状态改变
+        /// </summary>
+        partial void OnShowHiddenChanged(bool value)
+        {
+            LoadSteamAccounts();
+            LoadSteamGames();
+        }
+
+        #endregion
+
         #region 公共方法
 
         /// <summary>
@@ -154,7 +173,6 @@ namespace SteamHub.ViewModel
         {
             LoadSteamAccounts();
             LoadSteamGames();
-            LoadDeletedData();
         }
 
         #endregion

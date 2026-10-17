@@ -62,9 +62,9 @@ public class SteamAccount
     }
 
     /// <summary>
-    /// 是否已删除
+    /// 是否已隐藏
     /// </summary>
-    public bool IsDeleted
+    public bool IsHidden
     {
         get; set;
     }
