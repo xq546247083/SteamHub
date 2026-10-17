@@ -38,6 +38,14 @@ public class SteamGame
     }
 
     /// <summary>
+    /// Steam 游戏大图 (library_hero)
+    /// </summary>
+    public byte[] Hero
+    {
+        get; set;
+    }
+
+    /// <summary>
     /// 是否已删除
     /// </summary>
     public bool IsDeleted
@@ -65,12 +73,13 @@ public class SteamGame
     {
     }
 
-    public SteamGame(Guid id, string appId, string name, byte[] icon, long lastPlayed = 0)
+    public SteamGame(Guid id, string appId, string name, byte[] icon, byte[] hero, long lastPlayed = 0)
     {
         Id = id;
         AppId = appId;
         Name = name;
         Icon = icon;
+        Hero = hero;
         LastPlayed = lastPlayed;
     }
 }

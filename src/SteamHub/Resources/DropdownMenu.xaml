@@ -1,0 +1,183 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+
+    <!-- 游戏账号子菜单项样式 -->
+    <Style x:Key="GameAccountSubMenuItemStyle" TargetType="MenuItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#1e293b" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="itemBorder"
+                            CornerRadius="6"
+                            Background="{TemplateBinding Background}"
+                            Padding="10,7"
+                            Margin="0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 账号图标 -->
+                            <materialDesign:PackIcon Kind="AccountOutline"
+                                                     Width="15"
+                                                     Height="15"
+                                                     Foreground="#8b5cf6"
+                                                     VerticalAlignment="Center"
+                                                     Margin="0,0,8,0" />
+
+                            <TextBlock Grid.Column="1"
+                                       x:Name="headerText"
+                                       Text="{TemplateBinding Header}"
+                                       FontSize="12"
+                                       FontWeight="Medium"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="140" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="itemBorder" Property="Background" Value="#f3e8ff" />
+                            <Setter TargetName="headerText" Property="Foreground" Value="#6d28d9" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 顶级触发菜单项样式 (纯净浮层，白底圆角柔和阴影，消除原生灰色块) -->
+    <Style x:Key="GameAccountTopMenuItemStyle" TargetType="MenuItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Grid ClipToBounds="False">
+                        <!-- 按钮内容 -->
+                        <ContentPresenter ContentSource="Header" />
+
+                        <!-- 下拉弹出面板 -->
+                        <Popup x:Name="PART_Popup"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                               Placement="Bottom"
+                               PopupAnimation="Fade"
+                               VerticalOffset="4">
+                            <Border Background="#ffffff"
+                                    BorderBrush="#e2e8f0"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="4"
+                                    MinWidth="120"
+                                    MaxHeight="260">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="14"
+                                                      ShadowDepth="3"
+                                                      Direction="270"
+                                                      Color="#000000"
+                                                      Opacity="0.12" />
+                                </Border.Effect>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <StackPanel IsItemsHost="True" />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 现代化上下文菜单项样式 -->
+    <Style x:Key="ModernContextMenuItemStyle" TargetType="MenuItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#1e293b" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="itemBorder"
+                            CornerRadius="6"
+                            Background="{TemplateBinding Background}"
+                            Padding="10,7"
+                            Margin="2,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter Grid.Column="0" ContentSource="Icon" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{TemplateBinding Header}"
+                                       FontSize="12"
+                                       FontWeight="Medium"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="itemBorder" Property="Background" Value="#f3e8ff" />
+                            <Setter Property="Foreground" Value="#6d28d9" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 现代化上下文菜单样式 -->
+    <Style x:Key="ModernContextMenuStyle" TargetType="ContextMenu">
+        <Style.Resources>
+            <Style TargetType="MenuItem" BasedOn="{StaticResource ModernContextMenuItemStyle}" />
+            <Style TargetType="Separator">
+                <Setter Property="Height" Value="1" />
+                <Setter Property="Background" Value="#f1f5f9" />
+                <Setter Property="Margin" Value="4,3" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Separator">
+                            <Border Height="1" Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Style.Resources>
+        <Setter Property="Background" Value="#ffffff" />
+        <Setter Property="BorderBrush" Value="#e2e8f0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="HasDropShadow" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Direction="270" Color="#000000" Opacity="0.12" />
+                        </Border.Effect>
+                        <StackPanel IsItemsHost="True" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

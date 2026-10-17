@@ -297,6 +297,7 @@ public static class SteamAnalyzer
     /// 解析单个 appmanifest_*.acf 文件
     /// </summary>
     /// <param name="manifestPath">清单文件路径</param>
+    /// <param name="steamPath">Steam 安装路径</param>
     /// <returns>游戏信息</returns>
     private static SteamGameSource LoadGameSource(string manifestPath)
     {
@@ -306,15 +307,112 @@ public static class SteamAnalyzer
         }
 
         var vdfContent = File.ReadAllText(manifestPath);
+        var appId = ExtractValue(vdfContent, "appid");
+        var name = ExtractValue(vdfContent, "name");
         var lastPlayedStr = ExtractValue(vdfContent, "LastPlayed");
         long.TryParse(lastPlayedStr, out var lastPlayed);
 
+        var (icon, hero) = LoadGameImages(appId);
+
         return new SteamGameSource
         {
-            AppId = ExtractValue(vdfContent, "appid"),
-            Name = ExtractValue(vdfContent, "name"),
+            AppId = appId,
+            Name = name,
+            Icon = icon,
+            Hero = hero,
             LastPlayed = lastPlayed
         };
+    }
+
+    /// <summary>
+    /// 自动从 Steam 本地缓存中加载游戏图标与大图
+    /// </summary>
+    /// <param name="appId">游戏 AppId</param>
+    /// <returns>游戏图标 Icon 与大图 Hero</returns>
+    private static (byte[] Icon, byte[] Hero) LoadGameImages(string appId)
+    {
+        var icon = Array.Empty<byte>();
+        var hero = Array.Empty<byte>();
+        try
+        {
+            var steamPath = SteamTool.GetSteamPath();
+            if (string.IsNullOrEmpty(steamPath) || string.IsNullOrEmpty(appId))
+            {
+                return (icon, hero);
+            }
+
+            var libraryCacheDir = Path.Combine(steamPath, "appcache", "librarycache", appId);
+            if (Directory.Exists(libraryCacheDir))
+            {
+                var files = Directory.GetFiles(libraryCacheDir, "*.*", SearchOption.AllDirectories);
+
+                // 1. 查找游戏图标 (40位哈希)
+                var iconFile = files.FirstOrDefault(f =>
+                {
+                    var fileName = Path.GetFileName(f);
+                    return Regex.IsMatch(fileName, @"^[0-9a-fA-F]{40}(\.jpg|\.png|\.ico)?$");
+                });
+
+                if (iconFile != null)
+                {
+                    // 优先从 steam/games/<hash>.ico 中读取高清矢量图标
+                    var hash = Path.GetFileNameWithoutExtension(iconFile);
+                    var icoPath = Path.Combine(steamPath, "steam", "games", $"{hash}.ico");
+                    if (File.Exists(icoPath))
+                    {
+                        icon = File.ReadAllBytes(icoPath);
+                    }
+                    else if (File.Exists(iconFile))
+                    {
+                        icon = File.ReadAllBytes(iconFile);
+                    }
+                }
+
+                // 2. 查找游戏大图
+                // 优先级 1: 竖版海报图 (library_600x900 / library_capsule，最适配 160x245 卡片比例)
+                var heroFile = files.FirstOrDefault(f => Path.GetFileName(f).Equals("library_600x900_schinese.jpg", StringComparison.OrdinalIgnoreCase))
+                    ?? files.FirstOrDefault(f => Path.GetFileName(f).Equals("library_capsule_schinese.jpg", StringComparison.OrdinalIgnoreCase))
+                    ?? files.FirstOrDefault(f => Path.GetFileName(f).Equals("library_600x900.jpg", StringComparison.OrdinalIgnoreCase))
+                    ?? files.FirstOrDefault(f => Path.GetFileName(f).Equals("library_capsule.jpg", StringComparison.OrdinalIgnoreCase))
+                    ?? files.FirstOrDefault(f =>
+                    {
+                        var fileName = Path.GetFileName(f);
+                        return (fileName.Contains("600x900", StringComparison.OrdinalIgnoreCase) || fileName.Contains("library_capsule", StringComparison.OrdinalIgnoreCase))
+                            && (fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase));
+                    })
+                    // 优先级 2: 宽屏大图 (library_hero)
+                    ?? files.FirstOrDefault(f => Path.GetFileName(f).Equals("library_hero_schinese.jpg", StringComparison.OrdinalIgnoreCase))
+                    ?? files.FirstOrDefault(f => Path.GetFileName(f).Equals("library_hero.jpg", StringComparison.OrdinalIgnoreCase))
+                    ?? files.FirstOrDefault(f =>
+                    {
+                        var fileName = Path.GetFileName(f);
+                        return fileName.Contains("library_hero", StringComparison.OrdinalIgnoreCase)
+                            && !fileName.Contains("blur", StringComparison.OrdinalIgnoreCase)
+                            && (fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase));
+                    })
+                    // 优先级 3: 页眉横幅 (header / library_header)
+                    ?? files.FirstOrDefault(f => Path.GetFileName(f).Equals("library_header_schinese.jpg", StringComparison.OrdinalIgnoreCase))
+                    ?? files.FirstOrDefault(f => Path.GetFileName(f).Equals("header_schinese.jpg", StringComparison.OrdinalIgnoreCase))
+                    ?? files.FirstOrDefault(f => Path.GetFileName(f).Equals("library_header.jpg", StringComparison.OrdinalIgnoreCase))
+                    ?? files.FirstOrDefault(f => Path.GetFileName(f).Equals("header.jpg", StringComparison.OrdinalIgnoreCase));
+
+                if (heroFile != null && File.Exists(heroFile))
+                {
+                    hero = File.ReadAllBytes(heroFile);
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        // 兜底：若未获取到大图，则降级使用游戏图标
+        if ((hero == null || hero.Length == 0) && icon != null && icon.Length > 0)
+        {
+            hero = icon;
+        }
+
+        return (icon, hero);
     }
 
     /// <summary>

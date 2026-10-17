@@ -97,30 +97,8 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void Refresh()
         {
-            // 1. 刷新游戏数据 (包含从 acf 解析的 LastPlayed)
-            var steamGameSources = SteamAnalyzer.GetAllGames();
-            var steamGames = steamGameSources.Select(r => new SteamGame(Guid.Empty, r.AppId, r.Name, r.Icon, r.LastPlayed)).ToList();
-            SteamGameRepository.AddList(steamGames);
-
-            // 2. 刷新账号与游戏多对多关联及 LastPlayed (业务层清空再添加)
-            SteamAccountGameRepository.Clear();
-            var accountGameSources = SteamAnalyzer.GetAllAccountPlayGames();
-            var accountGames = accountGameSources.Select(r => new SteamAccountGame(Guid.NewGuid(), r.SteamId, r.AppId, r.LastPlayed)).ToList();
-            SteamAccountGameRepository.AddOrUpdateList(accountGames);
-
-            // 3. 业务层统计账号拥有的游戏数量与最新游戏时间，存入账号数据
-            var steamAccountSources = SteamAnalyzer.GetAllLoginAccounts();
-            var steamAccounts = steamAccountSources.Select(r =>
-            {
-                var playedGames = accountGames.Where(g => g.SteamId == r.SteamId).ToList();
-                int gameCount = playedGames.Count;
-                long lastPlayed = playedGames.Count > 0 ? playedGames.Max(g => g.LastPlayed) : 0;
-                return new SteamAccount(Guid.NewGuid(), r.SteamId, r.AccountName, r.PersonaName ?? r.AccountName, string.Empty, 0, r.Icon, gameCount, lastPlayed);
-            }).ToList();
-            SteamAccountRepository.AddList(steamAccounts);
-
+            ReAnalyzer();
             Lactor.ReLoad();
-            Lactor.ShowToolTip("刷新成功!");
         }
 
         /// <summary>
@@ -139,6 +117,35 @@ namespace SteamHub.ViewModel
         #endregion
 
         #region 公共方法
+
+        /// <summary>
+        /// 解析数据
+        /// </summary>
+        public void ReAnalyzer() 
+        {
+            // 1. 刷新游戏数据 (包含从 acf 解析的 LastPlayed)
+            var steamGameSources = SteamAnalyzer.GetAllGames();
+            var steamGames = steamGameSources.Select(r => new SteamGame(Guid.Empty, r.AppId, r.Name, r.Icon, r.Hero, r.LastPlayed)).ToList();
+            SteamGameRepository.AddList(steamGames);
+
+            // 2. 刷新账号与游戏多对多关联及 LastPlayed (业务层清空再添加)
+            SteamAccountGameRepository.Clear();
+            var accountGameSources = SteamAnalyzer.GetAllAccountPlayGames();
+            var accountGames = accountGameSources.Select(r => new SteamAccountGame(Guid.NewGuid(), r.SteamId, r.AppId, r.LastPlayed)).ToList();
+            SteamAccountGameRepository.AddOrUpdateList(accountGames);
+
+            // 3. 业务层统计账号拥有的本地已安装游戏数量与最新游戏时间，存入账号数据
+            var installedAppIds = steamGames.Select(g => g.AppId).ToHashSet();
+            var steamAccountSources = SteamAnalyzer.GetAllLoginAccounts();
+            var steamAccounts = steamAccountSources.Select(r =>
+            {
+                var playedGames = accountGames.Where(g => g.SteamId == r.SteamId && installedAppIds.Contains(g.AppId)).ToList();
+                int gameCount = playedGames.Count;
+                long lastPlayed = playedGames.Count > 0 ? playedGames.Max(g => g.LastPlayed) : 0;
+                return new SteamAccount(Guid.NewGuid(), r.SteamId, r.AccountName, r.PersonaName ?? r.AccountName, string.Empty, 0, r.Icon, gameCount, lastPlayed);
+            }).ToList();
+            SteamAccountRepository.AddList(steamAccounts);
+        }
 
         /// <summary>
         /// 加载所有数据

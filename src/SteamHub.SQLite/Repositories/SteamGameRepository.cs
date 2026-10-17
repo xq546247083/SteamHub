@@ -75,7 +75,14 @@ namespace SteamHub.Repositories
             if (existing != null)
             {
                 existing.Name = game.Name;
-                existing.Icon = game.Icon;
+                if (game.Icon != null)
+                {
+                    existing.Icon = game.Icon;
+                }
+                if (game.Hero != null)
+                {
+                    existing.Hero = game.Hero;
+                }
                 if (game.LastPlayed > 0)
                 {
                     existing.LastPlayed = game.LastPlayed;
@@ -106,7 +113,14 @@ namespace SteamHub.Repositories
                 if (existing != null)
                 {
                     existing.Name = game.Name;
-                    existing.Icon = game.Icon;
+                    if (game.Icon != null)
+                    {
+                        existing.Icon = game.Icon;
+                    }
+                    if (game.Hero != null)
+                    {
+                        existing.Hero = game.Hero;
+                    }
                     if (game.LastPlayed > 0)
                     {
                         existing.LastPlayed = game.LastPlayed;
@@ -140,7 +154,14 @@ namespace SteamHub.Repositories
                 }
 
                 existing.Name = game.Name;
-                existing.Icon = game.Icon;
+                if (game.Icon != null)
+                {
+                    existing.Icon = game.Icon;
+                }
+                if (game.Hero != null)
+                {
+                    existing.Hero = game.Hero;
+                }
                 if (game.LastPlayed > 0)
                 {
                     existing.LastPlayed = game.LastPlayed;

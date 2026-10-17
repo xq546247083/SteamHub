@@ -1,10 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SteamHub.Entities;
 using SteamHub.Enums;
 using SteamHub.Manager;
 using SteamHub.Repositories;
-using System.Collections.ObjectModel;
 
 namespace SteamHub.ViewModel
 {
@@ -30,18 +29,6 @@ namespace SteamHub.ViewModel
         [ObservableProperty]
         private string editSteamAccountPassword;
 
-        /// <summary>
-        /// 编辑steam账号图标
-        /// </summary>
-        [ObservableProperty]
-        private byte[] editSteamAccountIcon;
-
-        /// <summary>
-        /// 可用账号图标
-        /// </summary>
-        [ObservableProperty]
-        private ObservableCollection<byte[]> allAccountIcons;
-
         #endregion
 
         #region 绑定方法
@@ -60,24 +47,7 @@ namespace SteamHub.ViewModel
             EditSteamAccountAccount = steamAccount.Account;
             EditSteamAccountName = steamAccount.Name;
             EditSteamAccountPassword = steamAccount.Password;
-            EditSteamAccountIcon = steamAccount.Icon;
 
-            // 加载所有账号图标列表
-            var allSteamAccountIcons = SteamAnalyzer.GetAllAccountIcons();
-            allSteamAccountIcons.AddRange(SteamAnalyzer.GetAllGameIcons());
-            if (EditSteamAccountIcon != null)
-            {
-                var editSteamAccountIconStr = BitConverter.ToString(EditSteamAccountIcon);
-                for (var i = 0; i < allSteamAccountIcons.Count; i++)
-                {
-                    if (BitConverter.ToString(allSteamAccountIcons[i]) == editSteamAccountIconStr)
-                    {
-                        allSteamAccountIcons.Remove(allSteamAccountIcons[i]);
-                    }
-                }
-                allSteamAccountIcons.Insert(0, EditSteamAccountIcon);
-            }
-            AllAccountIcons = new ObservableCollection<byte[]>(allSteamAccountIcons);
             DrawerType = DrawerType.SteamAccount;
         }
 
@@ -91,52 +61,56 @@ namespace SteamHub.ViewModel
         }
 
         /// <summary>
-        /// 复制用户名
+        /// 复制账号 (支持列表直接传参或抽屉当前账号)
         /// </summary>
         [RelayCommand]
-        private void CopySteamAccountAccount()
+        private void CopySteamAccount(string account)
         {
-            if (string.IsNullOrEmpty(EditSteamAccountAccount))
+            var target = string.IsNullOrEmpty(account) ? EditSteamAccountAccount : account;
+            if (string.IsNullOrEmpty(target))
             {
                 return;
             }
 
-            System.Windows.Clipboard.SetDataObject(EditSteamAccountAccount);
-            Lactor.ShowToolTip("复制成功！");
+            System.Windows.Clipboard.SetDataObject(target);
+            Lactor.ShowToolTip($"已复制账号: {target}");
         }
 
         /// <summary>
-        /// 复制密码
+        /// 复制密码 (支持列表直接传参或抽屉当前密码)
         /// </summary>
         [RelayCommand]
-        private void CopySteamAccountPassword()
+        private void CopySteamPassword(string password)
         {
-            if (string.IsNullOrEmpty(EditSteamAccountPassword))
+            var target = string.IsNullOrEmpty(password) ? EditSteamAccountPassword : password;
+            if (string.IsNullOrEmpty(target))
             {
+                Lactor.ShowToolTip("未设置密码！");
                 return;
             }
 
-            System.Windows.Clipboard.SetDataObject(EditSteamAccountPassword);
-            Lactor.ShowToolTip("复制成功！");
+            System.Windows.Clipboard.SetDataObject(target);
+            Lactor.ShowToolTip("密码已复制！");
         }
 
         /// <summary>
         /// 删除steam账号信息
         /// </summary>
         [RelayCommand]
-        private void DeleteSteamAccount()
+        private void DeleteSteamAccount(string account)
         {
-            if (string.IsNullOrEmpty(EditSteamAccountAccount))
+            var target = string.IsNullOrEmpty(account) ? EditSteamAccountAccount : account;
+            if (string.IsNullOrEmpty(target))
             {
                 return;
             }
 
-            if (!SteamAccountRepository.Exists(EditSteamAccountAccount))
+            if (!SteamAccountRepository.Exists(target))
             {
                 return;
             }
 
-            SteamAccountRepository.Delete(EditSteamAccountAccount);
+            SteamAccountRepository.Delete(target);
 
             DrawerType = DrawerType.None;
             Lactor.ReLoad();
@@ -169,24 +143,11 @@ namespace SteamHub.ViewModel
 
             steamAccount.Name = EditSteamAccountName;
             steamAccount.Password = EditSteamAccountPassword;
-            steamAccount.Icon = EditSteamAccountIcon;
             SteamAccountRepository.Update(steamAccount);
 
             DrawerType = DrawerType.None;
             Lactor.ReLoad();
             Lactor.ShowToolTip("保存成功！");
-        }
-
-        /// <summary>
-        /// 选择账号图标
-        /// </summary>
-        [RelayCommand]
-        private void SelectAccountIcon(byte[] icon)
-        {
-            if (icon != null)
-            {
-                EditSteamAccountIcon = icon;
-            }
         }
 
         #endregion

@@ -4,7 +4,6 @@ using SteamHub.Entities;
 using SteamHub.Enums;
 using SteamHub.Manager;
 using SteamHub.Repositories;
-using System.Collections.ObjectModel;
 
 namespace SteamHub.ViewModel
 {
@@ -19,18 +18,6 @@ namespace SteamHub.ViewModel
         /// </summary>
         [ObservableProperty]
         private string editSteamGameName;
-
-        /// <summary>
-        /// 编辑steam游戏图标
-        /// </summary>
-        [ObservableProperty]
-        private byte[] editSteamGameIcon;
-
-        /// <summary>
-        /// 可用游戏图标
-        /// </summary>
-        [ObservableProperty]
-        private ObservableCollection<byte[]> allGameIcons;
 
         #endregion
 
@@ -48,24 +35,7 @@ namespace SteamHub.ViewModel
             }
 
             EditSteamGameName = game.Name;
-            EditSteamGameIcon = game.Icon;
             editSteamGameAppId = game.AppId;
-
-            // 加载所有游戏图标列表
-            var allSteamGameIcons = SteamAnalyzer.GetAllGameIcons();
-            if (EditSteamGameIcon != null)
-            {
-                var editSteamGameIconStr = BitConverter.ToString(EditSteamGameIcon);
-                for (var i = 0; i < allSteamGameIcons.Count; i++)
-                {
-                    if (BitConverter.ToString(allSteamGameIcons[i]) == editSteamGameIconStr)
-                    {
-                        allSteamGameIcons.Remove(allSteamGameIcons[i]);
-                    }
-                }
-                allSteamGameIcons.Insert(0, EditSteamGameIcon);
-            }
-            AllGameIcons = new ObservableCollection<byte[]>(allSteamGameIcons);
             DrawerType = DrawerType.SteamGame;
         }
 
@@ -79,22 +49,23 @@ namespace SteamHub.ViewModel
         }
 
         /// <summary>
-        /// 删除steam游戏信息
+        /// 删除steam游戏信息 (支持列表直接传参或抽屉当前游戏)
         /// </summary>
         [RelayCommand]
-        private void DeleteSteamGame()
+        private void DeleteSteamGame(string appId)
         {
-            if (string.IsNullOrEmpty(editSteamGameAppId))
+            var target = string.IsNullOrEmpty(appId) ? editSteamGameAppId : appId;
+            if (string.IsNullOrEmpty(target))
             {
                 DrawerType = DrawerType.None;
                 return;
             }
 
-            SteamGameRepository.Delete(editSteamGameAppId);
+            SteamGameRepository.Delete(target);
 
             DrawerType = DrawerType.None;
             Lactor.ReLoad();
-            Lactor.ShowToolTip("保存成功！");
+            Lactor.ShowToolTip("删除成功！");
         }
 
         /// <summary>
@@ -121,24 +92,11 @@ namespace SteamHub.ViewModel
             }
 
             game.Name = EditSteamGameName;
-            game.Icon = EditSteamGameIcon;
             SteamGameRepository.UpdateList(new List<SteamGame>() { game });
 
             DrawerType = DrawerType.None;
             Lactor.ReLoad();
             Lactor.ShowToolTip("保存成功！");
-        }
-
-        /// <summary>
-        /// 选择游戏图标
-        /// </summary>
-        [RelayCommand]
-        private void SelectGameIcon(byte[] icon)
-        {
-            if (icon != null)
-            {
-                EditSteamGameIcon = icon;
-            }
         }
 
         #endregion

@@ -68,6 +68,16 @@ namespace SteamHub.ViewModel
         }
 
         /// <summary>
+        /// 刷新 Steam 数据
+        /// </summary>
+        [RelayCommand]
+        private void Refresh()
+        {
+            Lactor.MainViewModel.ReAnalyzer();
+            Lactor.ReLoad();
+        }
+
+        /// <summary>
         /// 选中账号
         /// </summary>
         [RelayCommand]

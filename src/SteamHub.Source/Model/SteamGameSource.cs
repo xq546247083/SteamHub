@@ -30,6 +30,14 @@ namespace SteamHub.Model
         }
 
         /// <summary>
+        /// Steam 游戏大图 (library_hero)
+        /// </summary>
+        public byte[] Hero
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// 上次游玩时间 (Unix 时间戳)
         /// </summary>
         public long LastPlayed

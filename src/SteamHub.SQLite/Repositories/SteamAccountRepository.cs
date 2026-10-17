@@ -157,14 +157,8 @@ namespace SteamHub.Repositories
                 {
                     existing.Name = steamAccount.Name;
                     existing.Icon = steamAccount.Icon;
-                    if (steamAccount.GameCount > 0)
-                    {
-                        existing.GameCount = steamAccount.GameCount;
-                    }
-                    if (steamAccount.LastPlayed > 0)
-                    {
-                        existing.LastPlayed = steamAccount.LastPlayed;
-                    }
+                    existing.GameCount = steamAccount.GameCount;
+                    existing.LastPlayed = steamAccount.LastPlayed;
                     continue;
                 }
 

@@ -62,8 +62,6 @@ public class SteamHubDbContext : DbContext
             entity.Property(e => e.SteamId).HasMaxLength(64);
             entity.Property(e => e.Name).HasMaxLength(64);
             entity.Property(e => e.Password).HasMaxLength(64);
-            entity.Property(e => e.GameCount).HasDefaultValue(0);
-            entity.Property(e => e.LastPlayed).HasDefaultValue(0);
         });
 
         // 配置表配置
@@ -83,7 +81,6 @@ public class SteamHubDbContext : DbContext
             entity.Property(e => e.AppId).IsRequired().HasMaxLength(64);
             entity.Property(e => e.Name).HasMaxLength(64);
             entity.Property(e => e.CurrentSelectAccountSteamId).HasMaxLength(64);
-            entity.Property(e => e.LastPlayed).HasDefaultValue(0);
         });
 
         // Steam 账号与游戏关系配置
