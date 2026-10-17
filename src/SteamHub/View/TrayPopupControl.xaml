@@ -401,7 +401,7 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <!-- 登录新账号 -->
                     <Button Style="{StaticResource MaterialDesignFlatButton}"
-                            Command="{Binding LoginSteamAccountCommand}"
+                            Command="{Binding LoginNewSteamAccountCommand}"
                             Foreground="#673ab7"
                             Padding="8,4"
                             Height="28"

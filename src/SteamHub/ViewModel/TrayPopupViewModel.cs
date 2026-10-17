@@ -58,18 +58,12 @@ namespace SteamHub.ViewModel
         #region 绑定方法
 
         /// <summary>
-        /// 切换Steam账号
+        /// 登录新账号
         /// </summary>
-        /// <param name="account">目标账号</param>
         [RelayCommand]
-        private void SwitchSteamAccount(SteamAccount account)
+        private void LoginNewSteamAccount()
         {
-            if (AppGlobalData.IsDefaultAccount(account))
-            {
-                return;
-            }
-
-            SteamTool.OpenAccount(account.Account);
+            SteamTool.OpenAccount(string.Empty);
             NotifyIconManager.Close();
         }
 
@@ -88,49 +82,19 @@ namespace SteamHub.ViewModel
         }
 
         /// <summary>
-        /// 登录新账号
+        /// 切换Steam账号
         /// </summary>
+        /// <param name="account">目标账号</param>
         [RelayCommand]
-        private void LoginSteamAccount()
+        private void SwitchSteamAccount(SteamAccount account)
         {
-            SteamTool.OpenAccount(string.Empty);
-            NotifyIconManager.Close();
-        }
-
-        /// <summary>
-        /// 切换自启动
-        /// </summary>
-        [RelayCommand]
-        private void ToggleAutoStart()
-        {
-            var targetState = IsLaunchOnSysPowerOn;
-            if (targetState)
+            if (AppGlobalData.IsDefaultAccount(account))
             {
-                IsLaunchOnSysPowerOn = TaskSchedulerHelper.AddLuanchTask(AppGlobal.AppName, Application.ExecutablePath);
+                return;
             }
-            else
-            {
-                TaskSchedulerHelper.Delete(AppGlobal.AppName);
-            }
-        }
 
-        /// <summary>
-        /// 打开主窗口
-        /// </summary>
-        [RelayCommand]
-        private void OpenMainWindow()
-        {
-            Lactor.OpenMainWindow();
+            SteamTool.OpenAccount(account.Account);
             NotifyIconManager.Close();
-        }
-
-        /// <summary>
-        /// 退出程序
-        /// </summary>
-        [RelayCommand]
-        private void Exit()
-        {
-            Environment.Exit(0);
         }
 
         /// <summary>
@@ -196,6 +160,42 @@ namespace SteamHub.ViewModel
 
             SteamTool.OpenAccountAndGame(targetAccount, game.AppId);
             NotifyIconManager.Close();
+        }
+
+        /// <summary>
+        /// 切换自启动
+        /// </summary>
+        [RelayCommand]
+        private void ToggleAutoStart()
+        {
+            var targetState = IsLaunchOnSysPowerOn;
+            if (targetState)
+            {
+                IsLaunchOnSysPowerOn = TaskSchedulerHelper.AddLuanchTask(AppGlobal.AppName, Application.ExecutablePath);
+            }
+            else
+            {
+                TaskSchedulerHelper.Delete(AppGlobal.AppName);
+            }
+        }
+
+        /// <summary>
+        /// 打开主窗口
+        /// </summary>
+        [RelayCommand]
+        private void OpenMainWindow()
+        {
+            Lactor.OpenMainWindow();
+            NotifyIconManager.Close();
+        }
+
+        /// <summary>
+        /// 退出程序
+        /// </summary>
+        [RelayCommand]
+        private void Exit()
+        {
+            Environment.Exit(0);
         }
 
         #endregion
