@@ -72,7 +72,7 @@ namespace SteamHub.ViewModel
             SteamGameRepository.SetHidden(target, newHidden);
 
             DrawerType = DrawerType.None;
-            Lactor.ReLoad();
+            Lactor.LoadAllData();
             Lactor.ShowToolTip(newHidden ? "已隐藏游戏！" : "已取消隐藏游戏！");
         }
 
@@ -103,7 +103,7 @@ namespace SteamHub.ViewModel
             SteamGameRepository.UpdateList(new List<SteamGame>() { game });
 
             DrawerType = DrawerType.None;
-            Lactor.ReLoad();
+            Lactor.LoadAllData();
             Lactor.ShowToolTip("保存成功！");
         }
 

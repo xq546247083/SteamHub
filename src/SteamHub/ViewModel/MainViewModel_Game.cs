@@ -65,7 +65,7 @@ namespace SteamHub.ViewModel
 
             // 如果当前在特定账号视图下，直接使用该账号启动
             var targetAccount = string.Empty;
-            if (!AppGlobalData.IsDefaultAccount(SelectedAccount))
+            if (!AppData.IsDefaultAccount(SelectedAccount))
             {
                 targetAccount = SelectedAccount.Account;
             }
@@ -129,7 +129,7 @@ namespace SteamHub.ViewModel
             TotalGameCount = SteamGameRepository.GetAll(false)?.Count ?? 0;
 
             // 过滤游戏名称
-            var tempGames = (AppGlobalData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll(ShowHidden) : SteamGameRepository.GetBySteamId(SelectedAccount.SteamId, ShowHidden)) ?? [];
+            var tempGames = (AppData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll(ShowHidden) : SteamGameRepository.GetBySteamId(SelectedAccount.SteamId, ShowHidden)) ?? [];
             var query = tempGames.AsEnumerable();
             if (!string.IsNullOrWhiteSpace(SearchSteamGameName))
             {

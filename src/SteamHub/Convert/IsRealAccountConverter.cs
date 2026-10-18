@@ -12,7 +12,7 @@ public class IsRealAccountConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         var steamId = value as string;
-        bool isReal = !AppGlobalData.IsDefaultAccount(steamId);
+        bool isReal = !AppData.IsDefaultAccount(steamId);
 
         if (parameter is string paramStr && paramStr.Equals("Inverse", StringComparison.OrdinalIgnoreCase))
         {

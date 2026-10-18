@@ -18,7 +18,7 @@ namespace SteamHub.ViewModel
         /// </summary>
         public TrayPopupViewModel()
         {
-            ReLoad();
+            LoadAllData();
         }
 
         #region 绑定属性
@@ -85,8 +85,8 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void Refresh()
         {
-            Lactor.MainViewModel.ReAnalyzer();
-            Lactor.ReLoad();
+            AppDataManager.AnalyzeSteamAccountAndGame();
+            Lactor.LoadAllData();
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void SwitchSteamAccount(SteamAccount account)
         {
-            if (AppGlobalData.IsDefaultAccount(account))
+            if (AppData.IsDefaultAccount(account))
             {
                 return;
             }
@@ -166,7 +166,7 @@ namespace SteamHub.ViewModel
 
             // 如果当前在特定账号视图下，直接使用该账号启动
             var targetAccount = string.Empty;
-            if (!AppGlobalData.IsDefaultAccount(SelectedAccount))
+            if (!AppData.IsDefaultAccount(SelectedAccount))
             {
                 targetAccount = SelectedAccount.Account;
             }
@@ -234,13 +234,24 @@ namespace SteamHub.ViewModel
         /// <summary>
         /// 加载数据
         /// </summary>
-        public void ReLoad()
+        public void LoadAllData()
+        {
+            LoadSteamAccounts();
+            LoadDisplayGames();
+            IsLaunchOnSysPowerOn = TaskSchedulerHelper.Get(AppGlobal.AppName) != null;
+        }
+
+        #endregion
+
+        #region 私有方法
+
+        private void LoadSteamAccounts()
         {
             var previousSelectedSteamId = SelectedAccount?.SteamId;
 
             // 加载账号
             var accounts = SteamAccountRepository.GetAll(includeHidden: false);
-            var list = new List<SteamAccount> { AppGlobalData.DefaultSteamAccount };
+            var list = new List<SteamAccount> { AppData.DefaultSteamAccount };
             if (accounts != null)
             {
                 list.AddRange(accounts);
@@ -251,30 +262,20 @@ namespace SteamHub.ViewModel
             if (!string.IsNullOrEmpty(previousSelectedSteamId))
             {
                 var matched = SteamAccounts.FirstOrDefault(a => a.SteamId == previousSelectedSteamId);
-                SelectedAccount = matched ?? AppGlobalData.DefaultSteamAccount;
+                SelectedAccount = matched ?? AppData.DefaultSteamAccount;
             }
             else
             {
-                SelectedAccount = AppGlobalData.DefaultSteamAccount;
+                SelectedAccount = AppData.DefaultSteamAccount;
             }
-
-            // 统计总游戏数 (不含隐藏) 并加载对应游戏列表
-            TotalGameCount = SteamGameRepository.GetAll(includeHidden: false)?.Count ?? 0;
-            LoadDisplayGames();
-
-            // 加载自启动状态
-            IsLaunchOnSysPowerOn = TaskSchedulerHelper.Get(AppGlobal.AppName) != null;
         }
-
-        #endregion
-
-        #region 私有方法
 
         private void LoadDisplayGames()
         {
-            DisplayGames = new ObservableCollection<SteamGame>(AppGlobalData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll(includeHidden: false) : SteamGameRepository.GetBySteamId(SelectedAccount?.SteamId, includeHidden: false) ?? []);
+            TotalGameCount = SteamGameRepository.GetAll(includeHidden: false)?.Count ?? 0;
+            DisplayGames = new ObservableCollection<SteamGame>(AppData.IsDefaultAccount(SelectedAccount) ? SteamGameRepository.GetAll(includeHidden: false) : SteamGameRepository.GetBySteamId(SelectedAccount?.SteamId, includeHidden: false) ?? []);
         }
-        
+
         #endregion
     }
 }

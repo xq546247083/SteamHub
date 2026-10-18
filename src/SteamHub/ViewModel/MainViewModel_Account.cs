@@ -61,13 +61,12 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void SwitchSteamAccount(SteamAccount account)
         {
-            if (AppGlobalData.IsDefaultAccount(account))
+            if (AppData.IsDefaultAccount(account))
             {
                 return;
             }
 
             SteamTool.OpenAccount(account.Account);
-            LoadSteamAccounts();
             Lactor.ShowToolTip($"已切换至账号: {account.Name}");
         }
 
@@ -84,7 +83,7 @@ namespace SteamHub.ViewModel
 
             // 获取账号列表
             var accounts = SteamAccountRepository.GetAll(ShowHidden);
-            var list = new List<SteamAccount> { AppGlobalData.DefaultSteamAccount };
+            var list = new List<SteamAccount> { AppData.DefaultSteamAccount };
             if (accounts != null)
             {
                 list.AddRange(accounts);
@@ -95,11 +94,11 @@ namespace SteamHub.ViewModel
             if (!string.IsNullOrEmpty(previousSelectedSteamId))
             {
                 var matched = SteamAccounts.FirstOrDefault(a => a.SteamId == previousSelectedSteamId);
-                SelectedAccount = matched ?? AppGlobalData.DefaultSteamAccount;
+                SelectedAccount = matched ?? AppData.DefaultSteamAccount;
             }
             else
             {
-                SelectedAccount = AppGlobalData.DefaultSteamAccount;
+                SelectedAccount = AppData.DefaultSteamAccount;
             }
         }
 

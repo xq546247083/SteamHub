@@ -103,8 +103,8 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void Refresh()
         {
-            ReAnalyzer();
-            Lactor.ReLoad();
+            AppDataManager.AnalyzeSteamAccountAndGame();
+            Lactor.LoadAllData();
         }
 
         /// <summary>
@@ -113,44 +113,13 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void CleanUp()
         {
-            // 1. 获取本地真实存在的游戏与登录账号
-            var steamGameSources = SteamAnalyzer.GetAllGames();
-            var validAppIds = steamGameSources.Select(g => g.AppId).ToHashSet();
+            // 清理和重新分析数据
+            var (clearAccountCount, clearGameCount) = AppDataManager.CleanUpInvalidSteamAccountAndGame();
+            
+            AppDataManager.AnalyzeSteamAccountAndGame();
+            Lactor.LoadAllData();
 
-            var steamAccountSources = SteamAnalyzer.GetAllLoginAccounts();
-            var validAccounts = steamAccountSources.Select(a => a.AccountName).ToHashSet();
-            var validSteamIds = steamAccountSources.Select(a => a.SteamId).ToHashSet();
-
-            // 2. 查询数据库中的所有数据 (包括已隐藏的)
-            var dbGames = SteamGameRepository.GetAll(includeHidden: true);
-            var dbAccounts = SteamAccountRepository.GetAll(includeHidden: true);
-
-            // 3. 找出本地已不存在的记录
-            var invalidGames = dbGames.Where(g => !validAppIds.Contains(g.AppId)).ToList();
-            var invalidAccounts = dbAccounts.Where(a => !validAccounts.Contains(a.Account)).ToList();
-
-            if (invalidGames.Count == 0 && invalidAccounts.Count == 0)
-            {
-                Lactor.ShowToolTip("本地账号与游戏均有效，无需清理！");
-                return;
-            }
-
-            // 4. 清理数据库中的无效数据
-            var invalidAppIds = invalidGames.Select(g => g.AppId).ToList();
-            var invalidAccountNames = invalidAccounts.Select(a => a.Account).ToList();
-            var invalidSteamIds = invalidAccounts.Select(a => a.SteamId).ToList();
-
-            SteamGameRepository.DeleteByAppIds(invalidAppIds);
-            SteamAccountGameRepository.DeleteByAppIds(invalidAppIds);
-            SteamAccountRepository.DeleteByAccounts(invalidAccountNames);
-            SteamAccountGameRepository.DeleteBySteamIds(invalidSteamIds);
-
-            // 5. 关闭抽屉，重新分析与重载界面
-            DrawerType = DrawerType.None;
-            ReAnalyzer();
-            Lactor.ReLoad();
-
-            Lactor.ShowToolTip($"清理完成！已移除 {invalidGames.Count} 个失效游戏，{invalidAccounts.Count} 个失效账号。");
+            Lactor.ShowToolTip($"清理完成！已移除 {clearAccountCount} 个失效账号，{clearGameCount} 个失效游戏。");
         }
 
         /// <summary>
@@ -175,42 +144,12 @@ namespace SteamHub.ViewModel
         /// </summary>
         partial void OnShowHiddenChanged(bool value)
         {
-            LoadSteamAccounts();
-            LoadSteamGames();
+            LoadAllData();
         }
 
         #endregion
 
         #region 公共方法
-
-        /// <summary>
-        /// 解析数据
-        /// </summary>
-        public void ReAnalyzer()
-        {
-            // 1. 刷新游戏数据 (包含从 acf 解析的 LastPlayed)
-            var steamGameSources = SteamAnalyzer.GetAllGames();
-            var steamGames = steamGameSources.Select(r => new SteamGame(Guid.Empty, r.AppId, r.Name, r.Icon, r.Hero, r.LastPlayed)).ToList();
-            SteamGameRepository.AddList(steamGames);
-
-            // 2. 刷新账号与游戏多对多关联及 LastPlayed (业务层清空再添加)
-            SteamAccountGameRepository.Clear();
-            var accountGameSources = SteamAnalyzer.GetAllAccountPlayGames();
-            var accountGames = accountGameSources.Select(r => new SteamAccountGame(Guid.NewGuid(), r.SteamId, r.AppId, r.LastPlayed)).ToList();
-            SteamAccountGameRepository.AddOrUpdateList(accountGames);
-
-            // 3. 业务层统计账号拥有的本地已安装游戏数量与最新游戏时间，存入账号数据
-            var installedAppIds = steamGames.Select(g => g.AppId).ToHashSet();
-            var steamAccountSources = SteamAnalyzer.GetAllLoginAccounts();
-            var steamAccounts = steamAccountSources.Select(r =>
-            {
-                var playedGames = accountGames.Where(g => g.SteamId == r.SteamId && installedAppIds.Contains(g.AppId)).ToList();
-                int gameCount = playedGames.Count;
-                long lastPlayed = playedGames.Count > 0 ? playedGames.Max(g => g.LastPlayed) : 0;
-                return new SteamAccount(Guid.NewGuid(), r.SteamId, r.AccountName, r.PersonaName ?? r.AccountName, string.Empty, 0, r.Icon, gameCount, lastPlayed);
-            }).ToList();
-            SteamAccountRepository.AddList(steamAccounts);
-        }
 
         /// <summary>
         /// 加载所有数据
@@ -239,7 +178,7 @@ namespace SteamHub.ViewModel
             {
                 var source = dropInfo.Data as SteamAccount;
                 var target = dropInfo.TargetItem as SteamAccount;
-                if (AppGlobalData.IsDefaultAccount(source) || AppGlobalData.IsDefaultAccount(target))
+                if (AppData.IsDefaultAccount(source) || AppData.IsDefaultAccount(target))
                 {
                     return;
                 }
@@ -256,7 +195,7 @@ namespace SteamHub.ViewModel
         {
             if (dropInfo.Data is SteamAccount sourceAccount && dropInfo.TargetItem is SteamAccount targetAccount)
             {
-                if (AppGlobalData.IsDefaultAccount(sourceAccount) || AppGlobalData.IsDefaultAccount(targetAccount))
+                if (AppData.IsDefaultAccount(sourceAccount) || AppData.IsDefaultAccount(targetAccount))
                 {
                     return;
                 }
@@ -266,14 +205,14 @@ namespace SteamHub.ViewModel
                 if (oldIndex != -1 && newIndex != -1)
                 {
                     SteamAccounts.Move(oldIndex, newIndex);
-                    var realAccounts = SteamAccounts.Where(a => !AppGlobalData.IsDefaultAccount(a)).ToList();
+                    var realAccounts = SteamAccounts.Where(a => !AppData.IsDefaultAccount(a)).ToList();
                     for (int i = 0; i < realAccounts.Count; i++)
                     {
                         realAccounts[i].Order = i;
                     }
 
                     SteamAccountRepository.UpdateList(realAccounts);
-                    Lactor.TrayPopupViewModel.ReLoad();
+                    Lactor.TrayPopupViewModel.LoadAllData();
                 }
             }
         }

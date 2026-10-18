@@ -110,12 +110,12 @@ namespace SteamHub.Manager
         }
 
         /// <summary>
-        /// 重载数据
+        /// 重载所有界面的数据
         /// </summary>
-        public static void ReLoad()
+        public static void LoadAllData()
         {
             MainViewModel.LoadAllData();
-            TrayPopupViewModel.ReLoad();
+            TrayPopupViewModel.LoadAllData();
         }
 
         #endregion

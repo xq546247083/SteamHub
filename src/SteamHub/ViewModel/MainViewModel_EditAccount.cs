@@ -115,7 +115,7 @@ namespace SteamHub.ViewModel
             SteamAccountRepository.SetHidden(target, newHidden);
 
             DrawerType = DrawerType.None;
-            Lactor.ReLoad();
+            Lactor.LoadAllData();
             Lactor.ShowToolTip(newHidden ? "已隐藏账号！" : "已取消隐藏账号！");
         }
 
@@ -148,7 +148,7 @@ namespace SteamHub.ViewModel
             SteamAccountRepository.Update(steamAccount);
 
             DrawerType = DrawerType.None;
-            Lactor.ReLoad();
+            Lactor.LoadAllData();
             Lactor.ShowToolTip("保存成功！");
         }
 

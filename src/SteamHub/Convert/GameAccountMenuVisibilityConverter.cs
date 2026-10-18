@@ -26,7 +26,7 @@ namespace SteamHub.Convert
             }
             else if (values[0] is Entities.SteamAccount account)
             {
-                isAllGames = AppGlobalData.IsDefaultAccount(account);
+                isAllGames = AppData.IsDefaultAccount(account);
             }
             else if (values[0] is bool boolVal)
             {

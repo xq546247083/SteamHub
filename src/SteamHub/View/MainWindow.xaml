@@ -657,7 +657,7 @@
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Text" Value="{Binding SelectedAccount.Name, StringFormat='{}{0}'}" />
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding SelectedAccount}" Value="{x:Static local:AppGlobalData.DefaultSteamAccount}">
+                                                <DataTrigger Binding="{Binding SelectedAccount}" Value="{x:Static local:AppData.DefaultSteamAccount}">
                                                     <Setter Property="Text" Value="全部游戏" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding SelectedAccount}" Value="{x:Null}">

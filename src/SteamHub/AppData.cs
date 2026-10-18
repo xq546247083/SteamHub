@@ -5,7 +5,7 @@ namespace SteamHub
     /// <summary>
     /// 全局应用数据与默认条目定义
     /// </summary>
-    public static class AppGlobalData
+    public static class AppData
     {
         /// <summary>
         /// 默认账号（包含全部游戏）
