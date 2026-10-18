@@ -192,7 +192,7 @@
                                                     Margin="3,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Visibility="{Binding SteamId, Converter={StaticResource IsRealAccountConverter}}">
-                                                <TextBlock Text="{Binding GameCount, StringFormat='{}{0}款'}"
+                                                <TextBlock Text="{Binding GameCount, StringFormat='{}{0}'}"
                                                            FontSize="9"
                                                            FontWeight="SemiBold"
                                                            Foreground="#673ab7" />
