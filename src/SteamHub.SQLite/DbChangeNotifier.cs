@@ -42,8 +42,8 @@ public static class DbChangeNotifier
                 // 阻塞直到有新事件进入
                 _signal.WaitOne();
 
-                // 等待 1 秒并抹掉 1 秒内的其他信号
-                Thread.Sleep(1000);
+                // 等待0.2秒并抹掉0.2秒内的其他信号
+                Thread.Sleep(200);
                 _signal.Reset();
 
                 // 触发刷新事件

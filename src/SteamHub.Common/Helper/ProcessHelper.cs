@@ -30,6 +30,7 @@ namespace SteamHub.Helper
                         item.WaitForExit(10000);
                     }
                 }
+                catch (Exception) { }
                 finally
                 {
                     item.Dispose();
