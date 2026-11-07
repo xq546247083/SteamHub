@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32.TaskScheduler;
+using Microsoft.Win32.TaskScheduler;
 
 namespace SteamHub.Helper
 {
@@ -20,15 +20,15 @@ namespace SteamHub.Helper
         }
 
         /// <summary>
-        /// 获取任务
+        /// 检查任务是否存在
         /// </summary>
-        /// <param name="taskName"></param>
-        /// <returns></returns>
-        public static Microsoft.Win32.TaskScheduler.Task Get(string taskName)
+        /// <param name="taskName">任务名称</param>
+        /// <returns>是否存在</returns>
+        public static bool Exists(string taskName)
         {
             using (var ts = new TaskService())
             {
-                return ts.FindTask(taskName);
+                return ts.FindTask(taskName) != null;
             }
         }
 
@@ -38,7 +38,7 @@ namespace SteamHub.Helper
         /// <param name="taskName"></param>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static bool AddLuanchTask(string taskName, string path)
+        public static bool Add(string taskName, string path)
         {
             using (var ts = new TaskService())
             {

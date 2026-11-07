@@ -1,4 +1,5 @@
-﻿using Hardcodet.Wpf.TaskbarNotification;
+using Hardcodet.Wpf.TaskbarNotification;
+using System.Drawing;
 using System.Reflection;
 
 namespace SteamHub.Manager

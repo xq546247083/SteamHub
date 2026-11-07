@@ -263,8 +263,8 @@ public static class SteamAnalyzer
             if (appsBlockMatch.Success)
             {
                 var appsBlock = appsBlockMatch.Groups[1].Value;
-                // 匹配每个 AppId 块: "AppId" { ... }
-                var appPattern = @"""(\d+)""\s*\{([\s\S]*?)\}";
+                // 匹配每个 AppId 块: "AppId" { ... } (使用平衡组处理内部可能存在的嵌套大括号)
+                var appPattern = @"""(\d+)""\s*\{((?>[^{}]+|\{(?<DEPTH>)|\}(?<-DEPTH>))*(?(DEPTH)(?!)))\}";
                 var matches = Regex.Matches(appsBlock, appPattern);
 
                 foreach (Match match in matches)

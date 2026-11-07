@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
@@ -8,8 +9,7 @@ namespace SteamHub.Convert;
 
 public class ByteToImageSourceConverter : IValueConverter
 {
-    private static readonly Dictionary<string, BitmapImage> _imageCache = new Dictionary<string, BitmapImage>();
-    private static readonly SHA256 _sha256 = SHA256.Create();
+    private static readonly ConcurrentDictionary<string, BitmapImage> _imageCache = new ConcurrentDictionary<string, BitmapImage>();
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
@@ -53,7 +53,7 @@ public class ByteToImageSourceConverter : IValueConverter
 
     private static string ConvertToHashString(byte[] bytes)
     {
-        var hashBytes = _sha256.ComputeHash(bytes);
+        var hashBytes = SHA256.HashData(bytes);
         return System.Convert.ToBase64String(hashBytes);
     }
 

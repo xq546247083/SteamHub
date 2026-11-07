@@ -9,6 +9,7 @@ using SteamHub.Manager;
 using SteamHub.Repositories;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows;
 using System.Windows.Input;
 
 namespace SteamHub.ViewModel
@@ -24,6 +25,8 @@ namespace SteamHub.ViewModel
         public MainViewModel()
         {
             AppTitle = $"{AppGlobal.AppChineseName} V{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3)}";
+
+            DbChangeNotifier.OnDatabaseChanged += OnDatabaseChanged;
             LoadAllData();
         }
 
@@ -92,7 +95,7 @@ namespace SteamHub.ViewModel
                 return;
             }
 
-            Lactor.MainWindow.Visibility = System.Windows.Visibility.Hidden;
+            Lactor.MainWindow.Visibility = Visibility.Hidden;
             Lactor.MainWindow.ShowInTaskbar = false;
             cancelEventArgs.Cancel = true;
         }
@@ -104,7 +107,6 @@ namespace SteamHub.ViewModel
         private void Refresh()
         {
             AppDataManager.AnalyzeSteamAccountAndGame();
-            Lactor.LoadAllData();
         }
 
         /// <summary>
@@ -115,11 +117,9 @@ namespace SteamHub.ViewModel
         {
             // 清理和重新分析数据
             var (clearAccountCount, clearGameCount) = AppDataManager.CleanUpInvalidSteamAccountAndGame();
-            
-            AppDataManager.AnalyzeSteamAccountAndGame();
-            Lactor.LoadAllData();
-
             Lactor.ShowToolTip($"清理完成！已移除 {clearAccountCount} 个失效账号，{clearGameCount} 个失效游戏。");
+
+            AppDataManager.AnalyzeSteamAccountAndGame();
         }
 
         /// <summary>
@@ -158,6 +158,25 @@ namespace SteamHub.ViewModel
         {
             LoadSteamAccounts();
             LoadSteamGames();
+        }
+
+        #endregion
+
+        #region 私有方法
+
+        /// <summary>
+        /// 响应底层数据库变更通知
+        /// </summary>
+        private void OnDatabaseChanged()
+        {
+            if (Application.Current.Dispatcher.CheckAccess())
+            {
+                LoadAllData();
+            }
+            else
+            {
+                Application.Current.Dispatcher.Invoke(LoadAllData);
+            }
         }
 
         #endregion
@@ -212,7 +231,6 @@ namespace SteamHub.ViewModel
                     }
 
                     SteamAccountRepository.UpdateList(realAccounts);
-                    Lactor.TrayPopupViewModel.LoadAllData();
                 }
             }
         }

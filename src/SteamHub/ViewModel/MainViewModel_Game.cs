@@ -112,7 +112,6 @@ namespace SteamHub.ViewModel
 
             // 设置关联
             SteamGameRepository.UpdateCurrentSelectAccount(game.AppId, account.SteamId);
-            LoadSteamGames();
             Lactor.ShowToolTip($"已设置【{game.Name}】启动账号: {account.Name}");
         }
 

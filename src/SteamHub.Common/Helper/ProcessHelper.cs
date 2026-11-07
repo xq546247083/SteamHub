@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 namespace SteamHub.Helper
 {
@@ -8,17 +8,31 @@ namespace SteamHub.Helper
     public static class ProcessHelper
     {
         /// <summary>
-        /// 杀steam进程
+        /// 杀指定进程并等待退出
         /// </summary>
+        /// <param name="processName">进程名</param>
         public static void Kill(string processName)
         {
-            var hendleProcessName = processName.ToLower().Split('.')[0];
-            var processList = Process.GetProcesses();
-            foreach (Process item in processList)
+            if (string.IsNullOrWhiteSpace(processName))
             {
-                if (item.ProcessName.ToLower() == hendleProcessName)
+                return;
+            }
+
+            var handleProcessName = processName.ToLower().Split('.')[0];
+            var processList = Process.GetProcessesByName(handleProcessName);
+            foreach (var item in processList)
+            {
+                try
                 {
-                    item.Kill();
+                    if (!item.HasExited)
+                    {
+                        item.Kill();
+                        item.WaitForExit(10000);
+                    }
+                }
+                finally
+                {
+                    item.Dispose();
                 }
             }
         }

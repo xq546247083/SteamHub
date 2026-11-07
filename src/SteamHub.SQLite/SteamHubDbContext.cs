@@ -40,6 +40,17 @@ public class SteamHubDbContext : DbContext
         get; set;
     }
 
+    public override int SaveChanges()
+    {
+        int affectedRows = base.SaveChanges();
+        if (affectedRows > 0)
+        {
+            DbChangeNotifier.Notify();
+        }
+
+        return affectedRows;
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)

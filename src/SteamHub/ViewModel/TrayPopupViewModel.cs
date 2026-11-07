@@ -5,6 +5,7 @@ using SteamHub.Helper;
 using SteamHub.Manager;
 using SteamHub.Repositories;
 using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace SteamHub.ViewModel
 {
@@ -18,6 +19,7 @@ namespace SteamHub.ViewModel
         /// </summary>
         public TrayPopupViewModel()
         {
+            DbChangeNotifier.OnDatabaseChanged += OnDatabaseChanged;
             LoadAllData();
         }
 
@@ -86,7 +88,6 @@ namespace SteamHub.ViewModel
         private void Refresh()
         {
             AppDataManager.AnalyzeSteamAccountAndGame();
-            Lactor.LoadAllData();
         }
 
         /// <summary>
@@ -147,9 +148,8 @@ namespace SteamHub.ViewModel
                 return;
             }
 
-            // 存入数据库
+            // 存入数据库，底层 SaveChanges 会自动触发数据刷新
             SteamGameRepository.UpdateCurrentSelectAccount(game.AppId, account.SteamId);
-            LoadDisplayGames();
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace SteamHub.ViewModel
             var targetState = IsLaunchOnSysPowerOn;
             if (targetState)
             {
-                IsLaunchOnSysPowerOn = TaskSchedulerHelper.AddLuanchTask(AppGlobal.AppName, Application.ExecutablePath);
+                IsLaunchOnSysPowerOn = TaskSchedulerHelper.Add(AppGlobal.AppName, Environment.ProcessPath ?? string.Empty);
             }
             else
             {
@@ -238,12 +238,28 @@ namespace SteamHub.ViewModel
         {
             LoadSteamAccounts();
             LoadDisplayGames();
-            IsLaunchOnSysPowerOn = TaskSchedulerHelper.Get(AppGlobal.AppName) != null;
+
+            IsLaunchOnSysPowerOn = TaskSchedulerHelper.Exists(AppGlobal.AppName);
         }
 
         #endregion
 
         #region 私有方法
+
+        /// <summary>
+        /// 响应底层数据库变更通知
+        /// </summary>
+        private void OnDatabaseChanged()
+        {
+            if (Application.Current.Dispatcher.CheckAccess())
+            {
+                LoadAllData();
+            }
+            else
+            {
+                Application.Current.Dispatcher.Invoke(LoadAllData);
+            }
+        }
 
         private void LoadSteamAccounts()
         {
