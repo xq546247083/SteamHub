@@ -67,7 +67,7 @@ namespace SteamHub.ViewModel
             }
 
             SteamTool.OpenAccount(account.Account);
-            Lactor.ShowToolTip($"已切换至账号: {account.Name}");
+            Locator.ShowToolTip($"已切换至账号: {account.Name}");
         }
 
         #endregion

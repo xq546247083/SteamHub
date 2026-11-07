@@ -332,7 +332,7 @@
                                                     </MenuItem.Header>
                                                     <MenuItem.ItemContainerStyle>
                                                         <Style TargetType="MenuItem" BasedOn="{StaticResource GameAccountSubMenuItemStyle}">
-                                                            <Setter Property="Command" Value="{Binding Path=SelectGameAccountCommand, Source={x:Static manager:Lactor.TrayPopupViewModel}}" />
+                                                            <Setter Property="Command" Value="{Binding Path=SelectGameAccountCommand, Source={x:Static manager:Locator.TrayPopupViewModel}}" />
                                                             <Setter Property="CommandParameter">
                                                                 <Setter.Value>
                                                                     <MultiBinding Converter="{StaticResource ArrayMultiConverter}">

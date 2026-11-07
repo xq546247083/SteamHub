@@ -95,8 +95,8 @@ namespace SteamHub.ViewModel
                 return;
             }
 
-            Lactor.MainWindow.Visibility = Visibility.Hidden;
-            Lactor.MainWindow.ShowInTaskbar = false;
+            Locator.MainWindow.Visibility = Visibility.Hidden;
+            Locator.MainWindow.ShowInTaskbar = false;
             cancelEventArgs.Cancel = true;
         }
 
@@ -117,7 +117,7 @@ namespace SteamHub.ViewModel
         {
             // 清理和重新分析数据
             var (clearAccountCount, clearGameCount) = AppDataManager.CleanUpInvalidSteamAccountAndGame();
-            Lactor.ShowToolTip($"清理完成！已移除 {clearAccountCount} 个失效账号，{clearGameCount} 个失效游戏。");
+            Locator.ShowToolTip($"清理完成！已移除 {clearAccountCount} 个失效账号，{clearGameCount} 个失效游戏。");
 
             AppDataManager.AnalyzeSteamAccountAndGame();
         }
@@ -172,11 +172,10 @@ namespace SteamHub.ViewModel
             if (Application.Current.Dispatcher.CheckAccess())
             {
                 LoadAllData();
+                return;
             }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(LoadAllData);
-            }
+
+            Application.Current.Dispatcher.Invoke(LoadAllData);
         }
 
         #endregion
@@ -203,7 +202,7 @@ namespace SteamHub.ViewModel
                 }
 
                 dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-                dropInfo.Effects = System.Windows.DragDropEffects.Move;
+                dropInfo.Effects = DragDropEffects.Move;
             }
         }
 

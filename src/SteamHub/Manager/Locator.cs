@@ -9,7 +9,7 @@ namespace SteamHub.Manager
     /// <summary>
     /// 加载器
     /// </summary>
-    public static class Lactor
+    public static class Locator
     {
         #region Win32 API
 
@@ -97,13 +97,13 @@ namespace SteamHub.Manager
         /// <param name="message">消息内容</param>
         public static void ShowToolTip(string message)
         {
-            if (System.Windows.Application.Current.Dispatcher.CheckAccess())
+            if (Application.Current.Dispatcher.CheckAccess())
             {
                 MainViewModel.SnackbarMessageQueue.Enqueue(message);
                 return;
             }
 
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 MainViewModel.SnackbarMessageQueue.Enqueue(message);
             });

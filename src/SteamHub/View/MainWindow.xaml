@@ -589,14 +589,14 @@
                                                     <ContextMenu Style="{StaticResource ModernContextMenuStyle}"
                                                                  DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                                                         <MenuItem Header="复制账号"
-                                                                  Command="{Binding Path=CopySteamAccountCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                  Command="{Binding Path=CopySteamAccountCommand, Source={x:Static manager:Locator.MainViewModel}}"
                                                                   CommandParameter="{Binding Account}">
                                                             <MenuItem.Icon>
                                                                 <materialDesign:PackIcon Kind="ContentCopy" Width="14" Height="14" Foreground="#673ab7" />
                                                             </MenuItem.Icon>
                                                         </MenuItem>
                                                         <MenuItem Header="复制密码"
-                                                                  Command="{Binding Path=CopySteamPasswordCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                  Command="{Binding Path=CopySteamPasswordCommand, Source={x:Static manager:Locator.MainViewModel}}"
                                                                   CommandParameter="{Binding Password}">
                                                             <MenuItem.Icon>
                                                                 <materialDesign:PackIcon Kind="KeyOutline" Width="14" Height="14" Foreground="#673ab7" />
@@ -604,7 +604,7 @@
                                                         </MenuItem>
                                                         <Separator Margin="0,2" Background="#f1f5f9" />
                                                          <MenuItem Header="编辑账号"
-                                                                  Command="{Binding Path=OpenEditSteamAccountDrawerCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                  Command="{Binding Path=OpenEditSteamAccountDrawerCommand, Source={x:Static manager:Locator.MainViewModel}}"
                                                                   CommandParameter="{Binding}">
                                                             <MenuItem.Icon>
                                                                 <materialDesign:PackIcon Kind="SquareEditOutline" Width="14" Height="14" Foreground="#3b82f6" />
@@ -612,7 +612,7 @@
                                                         </MenuItem>
                                                         <MenuItem Header="隐藏账号"
                                                                   Visibility="{Binding IsHidden, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                                                                  Command="{Binding Path=ToggleHideSteamAccountCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                  Command="{Binding Path=ToggleHideSteamAccountCommand, Source={x:Static manager:Locator.MainViewModel}}"
                                                                   CommandParameter="{Binding Account}">
                                                             <MenuItem.Icon>
                                                                 <materialDesign:PackIcon Kind="EyeOffOutline" Width="14" Height="14" Foreground="#ef4444" />
@@ -620,7 +620,7 @@
                                                         </MenuItem>
                                                         <MenuItem Header="取消隐藏"
                                                                   Visibility="{Binding IsHidden, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                                  Command="{Binding Path=ToggleHideSteamAccountCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                  Command="{Binding Path=ToggleHideSteamAccountCommand, Source={x:Static manager:Locator.MainViewModel}}"
                                                                   CommandParameter="{Binding Account}">
                                                             <MenuItem.Icon>
                                                                 <materialDesign:PackIcon Kind="EyeOutline" Width="14" Height="14" Foreground="#10b981" />
@@ -845,7 +845,7 @@
                                                         <ContextMenu Style="{StaticResource ModernContextMenuStyle}"
                                                                      DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                                                             <MenuItem Header="编辑游戏"
-                                                                      Command="{Binding Path=OpenEditSteamGameDrawerCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                      Command="{Binding Path=OpenEditSteamGameDrawerCommand, Source={x:Static manager:Locator.MainViewModel}}"
                                                                       CommandParameter="{Binding}">
                                                                 <MenuItem.Icon>
                                                                     <materialDesign:PackIcon Kind="SquareEditOutline" Width="14" Height="14" Foreground="#3b82f6" />
@@ -853,7 +853,7 @@
                                                             </MenuItem>
                                                             <MenuItem Header="隐藏游戏"
                                                                       Visibility="{Binding IsHidden, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                                                                      Command="{Binding Path=ToggleHideSteamGameCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                      Command="{Binding Path=ToggleHideSteamGameCommand, Source={x:Static manager:Locator.MainViewModel}}"
                                                                       CommandParameter="{Binding AppId}">
                                                                 <MenuItem.Icon>
                                                                     <materialDesign:PackIcon Kind="EyeOffOutline" Width="14" Height="14" Foreground="#ef4444" />
@@ -861,7 +861,7 @@
                                                             </MenuItem>
                                                             <MenuItem Header="取消隐藏"
                                                                       Visibility="{Binding IsHidden, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                                      Command="{Binding Path=ToggleHideSteamGameCommand, Source={x:Static manager:Lactor.MainViewModel}}"
+                                                                      Command="{Binding Path=ToggleHideSteamGameCommand, Source={x:Static manager:Locator.MainViewModel}}"
                                                                       CommandParameter="{Binding AppId}">
                                                                 <MenuItem.Icon>
                                                                     <materialDesign:PackIcon Kind="EyeOutline" Width="14" Height="14" Foreground="#10b981" />
@@ -938,7 +938,7 @@
                                                                     </MenuItem.Header>
                                                                     <MenuItem.ItemContainerStyle>
                                                                         <Style TargetType="MenuItem" BasedOn="{StaticResource GameAccountSubMenuItemStyle}">
-                                                                            <Setter Property="Command" Value="{Binding Path=SelectGameAccountCommand, Source={x:Static manager:Lactor.MainViewModel}}" />
+                                                                            <Setter Property="Command" Value="{Binding Path=SelectGameAccountCommand, Source={x:Static manager:Locator.MainViewModel}}" />
                                                                             <Setter Property="CommandParameter">
                                                                                 <Setter.Value>
                                                                                     <MultiBinding Converter="{StaticResource ArrayMultiConverter}">

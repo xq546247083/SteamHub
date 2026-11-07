@@ -73,7 +73,7 @@ namespace SteamHub.ViewModel
             }
 
             System.Windows.Clipboard.SetDataObject(target);
-            Lactor.ShowToolTip($"已复制账号: {target}");
+            Locator.ShowToolTip($"已复制账号: {target}");
         }
 
         /// <summary>
@@ -85,12 +85,12 @@ namespace SteamHub.ViewModel
             var target = string.IsNullOrEmpty(password) ? EditSteamAccountPassword : password;
             if (string.IsNullOrEmpty(target))
             {
-                Lactor.ShowToolTip("未设置密码！");
+                Locator.ShowToolTip("未设置密码！");
                 return;
             }
 
             System.Windows.Clipboard.SetDataObject(target);
-            Lactor.ShowToolTip("密码已复制！");
+            Locator.ShowToolTip("密码已复制！");
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace SteamHub.ViewModel
             SteamAccountRepository.SetHidden(target, newHidden);
 
             DrawerType = DrawerType.None;
-            Lactor.ShowToolTip(newHidden ? "已隐藏账号！" : "已取消隐藏账号！");
+            Locator.ShowToolTip(newHidden ? "已隐藏账号！" : "已取消隐藏账号！");
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace SteamHub.ViewModel
             SteamAccountRepository.Update(steamAccount);
 
             DrawerType = DrawerType.None;
-            Lactor.ShowToolTip("保存成功！");
+            Locator.ShowToolTip("保存成功！");
         }
 
         #endregion

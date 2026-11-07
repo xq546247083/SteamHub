@@ -214,7 +214,7 @@ namespace SteamHub.ViewModel
         [RelayCommand]
         private void OpenMainWindow()
         {
-            Lactor.OpenMainWindow();
+            Locator.OpenMainWindow();
             NotifyIconManager.Close();
         }
 
@@ -254,11 +254,10 @@ namespace SteamHub.ViewModel
             if (Application.Current.Dispatcher.CheckAccess())
             {
                 LoadAllData();
+                return;
             }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(LoadAllData);
-            }
+
+            Application.Current.Dispatcher.Invoke(LoadAllData);
         }
 
         private void LoadSteamAccounts()

@@ -10,7 +10,7 @@ namespace SteamHub.View
         public TrayPopupControl()
         {
             InitializeComponent();
-            this.DataContext = Lactor.TrayPopupViewModel;
+            this.DataContext = Locator.TrayPopupViewModel;
         }
     }
 }

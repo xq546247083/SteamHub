@@ -30,7 +30,7 @@ namespace SteamHub.Manager
             {
                 taskbarIcon.Icon = new Icon(stream);
             }
-            taskbarIcon.TrayPopup = Lactor.TrayPopupControl;
+            taskbarIcon.TrayPopup = Locator.TrayPopupControl;
             taskbarIcon.TrayMouseDoubleClick += TaskbarIcon_TrayMouseDoubleClick;
             taskbarIcon.TrayRightMouseUp += TaskbarIcon_TrayRightMouseUp;
 
@@ -56,7 +56,7 @@ namespace SteamHub.Manager
         /// <param name="e"></param>
         private static void TaskbarIcon_TrayMouseDoubleClick(object sender, System.Windows.RoutedEventArgs e)
         {
-            Lactor.OpenMainWindow();
+            Locator.OpenMainWindow();
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace SteamHub.Manager
                     ShowActivated = false,
                     AllowsTransparency = true,
                     Background = System.Windows.Media.Brushes.Transparent,
-                    Content = Lactor.TrayPopupControl
+                    Content = Locator.TrayPopupControl
                 };
 
                 dummyWindow.Show();
@@ -94,7 +94,7 @@ namespace SteamHub.Manager
                 dummyWindow.Close();
 
                 // 重新绑定回托盘
-                taskbarIcon.TrayPopup = Lactor.TrayPopupControl;
+                taskbarIcon.TrayPopup = Locator.TrayPopupControl;
             }));
         }
 
