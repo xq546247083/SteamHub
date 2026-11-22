@@ -32,6 +32,11 @@ namespace SteamHub
         public const string AutoLoginUserKey = "AutoLoginUser";
 
         /// <summary>
+        /// Steam 记住密码键名
+        /// </summary>
+        public const string RememberPasswordKey = "RememberPassword";
+
+        /// <summary>
         /// Steam 安装路径键名
         /// </summary>
         public const string SteamPathKey = "SteamPath";
@@ -40,6 +45,17 @@ namespace SteamHub
         /// Steam.exe 路径键名
         /// </summary>
         public const string SteamExeKey = "SteamExe";
+
+        /// <summary>
+        /// Steam 客户端及其关联子进程列表
+        /// </summary>
+        public static readonly string[] SteamProcessNames =
+        [
+            "steam",
+            "steamservice",
+            "steamwebhelper",
+            "GameOverlayUI"
+        ];
 
         #endregion
 

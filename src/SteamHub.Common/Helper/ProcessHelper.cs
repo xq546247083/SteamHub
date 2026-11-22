@@ -27,7 +27,7 @@ namespace SteamHub.Helper
                     if (!item.HasExited)
                     {
                         item.Kill();
-                        item.WaitForExit(10000);
+                        item.WaitForExit();
                     }
                 }
                 catch (Exception) { }
@@ -35,6 +35,23 @@ namespace SteamHub.Helper
                 {
                     item.Dispose();
                 }
+            }
+        }
+
+        /// <summary>
+        /// 批量杀指定进程并等待退出
+        /// </summary>
+        /// <param name="processNames">进程名集合</param>
+        public static void Kill(IEnumerable<string> processNames)
+        {
+            if (processNames == null)
+            {
+                return;
+            }
+
+            foreach (var processName in processNames)
+            {
+                Kill(processName);
             }
         }
     }

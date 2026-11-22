@@ -14,7 +14,7 @@ namespace SteamHub.Helper
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static bool Set(string keyPath, string key, string value, RegistryKey topKey = null)
+        public static bool Set(string keyPath, string key, object value, RegistryKey topKey = null)
         {
             if (topKey == null)
             {

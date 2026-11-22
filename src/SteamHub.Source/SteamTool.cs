@@ -52,6 +52,18 @@ namespace SteamHub
         }
 
         /// <summary>
+        /// 关闭Steam及其所有关联进程（包含 steam, steamservice, steamwebhelper, GameOverlayUI）
+        /// </summary>
+        public static void Kill()
+        {
+            // 杀掉所有 Steam 相关进程并等待退出
+            ProcessHelper.Kill(AppConstants.SteamProcessNames);
+
+            // 稍作缓冲，确保系统彻底释放跨进程通信管道和文件锁
+            Thread.Sleep(300);
+        }
+
+        /// <summary>
         /// 设置所有账号的AllowAutoLogin为1
         /// </summary>
         public static void SetAllowAutoLogin()
@@ -87,14 +99,15 @@ namespace SteamHub
         /// <param name="account">账号</param>
         public static void OpenAccount(string account)
         {
-            // 杀掉steam进程
-            ProcessHelper.Kill("steam");
+            // 杀掉所有 Steam 相关进程并等待退出
+            Kill();
 
             // 修改 loginusers.vdf 中所有账号的 AllowAutoLogin 为 1
             SetAllowAutoLogin();
 
             // 设置注册信息
-            RegistryHelper.Set(AppConstants.SteamRegistryPath, AppConstants.AutoLoginUserKey, account);
+            RegistryHelper.Set(AppConstants.SteamRegistryPath, AppConstants.AutoLoginUserKey, account ?? string.Empty);
+            RegistryHelper.Set(AppConstants.SteamRegistryPath, AppConstants.RememberPasswordKey, 1);
 
             // 启动Steam
             var steamExe = GetSteamExe();
